@@ -10249,3 +10249,144 @@ sparse
 Model: 1390655 parameters
 Training model...
 Training data:  0.00% lr=1.000e-03 rel_coef=100.0 total_loss:348.682	loss_rel:114.491	loss_prop_reg:234.191
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Command line arguments:
+train.py
+--mode
+train
+--dataset
+interaction
+--config_name
+fjmp_interaction
+--num_proposals
+15
+--gpu_start
+0
+--proposal_header
+--two_stage_training
+--training_stage
+1
+--ig
+sparse
+--focal_loss
+--gamma
+5.
+--weight_0
+1.
+--weight_1
+2.
+--weight_2
+4.
+--no_agenttype_encoder
+--learned_relation_header
+--batch_size
+64
+Model: 1390655 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Command line arguments:
+train.py
+--mode
+train
+--dataset
+interaction
+--config_name
+fjmp_interaction
+--num_proposals
+15
+--gpu_start
+0
+--proposal_header
+--two_stage_training
+--training_stage
+1
+--ig
+sparse
+--focal_loss
+--gamma
+5.
+--weight_0
+1.
+--weight_1
+2.
+--weight_2
+4.
+--no_agenttype_encoder
+--learned_relation_header
+--batch_size
+64
+Model: 1390655 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Command line arguments:
+train.py
+--mode
+train
+--dataset
+interaction
+--config_name
+fjmp_interaction
+--num_proposals
+15
+--gpu_start
+0
+--proposal_header
+--two_stage_training
+--training_stage
+1
+--ig
+sparse
+--focal_loss
+--gamma
+5.
+--weight_0
+1.
+--weight_1
+2.
+--weight_2
+4.
+--no_agenttype_encoder
+--learned_relation_header
+--batch_size
+64
+Model: 1390655 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Command line arguments:
+train.py
+--mode
+train
+--dataset
+interaction
+--config_name
+fjmp_interaction
+--num_proposals
+15
+--gpu_start
+0
+--proposal_header
+--two_stage_training
+--training_stage
+1
+--ig
+sparse
+--focal_loss
+--gamma
+5.
+--weight_0
+1.
+--weight_1
+2.
+--weight_2
+4.
+--no_agenttype_encoder
+--learned_relation_header
+--batch_size
+64
+Model: 1390655 parameters
+Training model...
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 total_loss:348.682	loss_rel:114.491	loss_prop_reg:234.191

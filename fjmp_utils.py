@@ -1,12 +1,10 @@
 import torch
 import torch.nn.functional as F
 from torch import nn
-from torch.autograd import Variable
-from torch.distributions import kl_divergence
 import numpy as np 
 import random
 import horovod.torch as hvd 
-import sys, os, math
+import sys, math
 import matplotlib.pyplot as plt
 from scipy import sparse
 
