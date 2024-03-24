@@ -3,7 +3,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-def build_dag_graph(graph, config):
+def build_graph(graph, config):
     edge_type = torch.argmax(graph.edata["edge_probs"], dim=1)
     all_edges = [x.unsqueeze(1) for x in graph.edges('uv')]
     all_edges = torch.cat(all_edges, 1)

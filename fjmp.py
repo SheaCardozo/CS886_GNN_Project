@@ -709,10 +709,10 @@ class FJMP(torch.nn.Module):
 
         graph.edata["edge_probs"] = edge_probs
 
-        dag_graph = build_dag_graph(graph, self.config)
+        dag_graph = build_graph(graph, self.config)
         
-        if (not self.two_stage_training) or (self.two_stage_training and self.training_stage == 2):
-            dag_graph = prune_graph_johnson(dag_graph)
+        #if (not self.two_stage_training) or (self.two_stage_training and self.training_stage == 2):
+        #    dag_graph = prune_graph_johnson(dag_graph)
         
         if self.proposal_header:
             dag_graph, proposals = self.proposal_decoder(dag_graph, actor_ctrs)

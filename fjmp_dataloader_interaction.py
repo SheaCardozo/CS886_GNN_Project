@@ -840,7 +840,6 @@ class InteractionDataset(Dataset):
                 if key in data:
                     new_data[key] = ref_copy(data[key])
             data = new_data
-
             return data
 
         data = self.read_interaction_data(idx)

@@ -16,7 +16,7 @@ from fjmp_get_dataloaders import get_dataloaders
 import horovod.torch as hvd 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--mode", choices=['train'], help='running mode : (train)', default="train")
+parser.add_argument("--mode", choices=['eval', 'eval_constant_velocity'], help='running mode : (eval, eval_constant_velocity)', default="eval")
 parser.add_argument("--dataset", choices=['interaction', 'argoverse2'], help='dataset : (interaction, argoverse2)', default="interaction")
 parser.add_argument("--config_name", default="dev", help="a name to indicate the log path and model save path")
 parser.add_argument("--num_edge_types", default=3, type=int, help='3 types: no-interaction, a-influences-b, b-influences-a')
@@ -111,43 +111,31 @@ if __name__ == '__main__':
     train_loader, val_loader = get_dataloaders(args, config)
 
     # Running training code
-    model = FJMP(config)
-    m = sum(p.numel() for p in model.parameters())
-    print_("Command line arguments:")
-    for it in sys.argv:
-        print_(it)
-    
-    print_("Model: {} parameters".format(m))
-    print_("Training model...")
+    if args.mode == 'eval':
+        model = FJMP(config)
+        m = sum(p.numel() for p in model.parameters())
+        print_("Model: {} parameters".format(m))
+        print_("Evaluating model...")
 
-    # save stage 1 config
-    if model.two_stage_training and model.training_stage == 1:
-        if hvd.rank() == 0:
-            with open(os.path.join(config["log_path"], "config_stage_1.pkl"), "wb") as f:
-                pickle.dump(config, f)
+        # load model from stage 1 and freeze weights
+        if model.two_stage_training and model.training_stage == 2:
+            with open(os.path.join(config["log_path"], "config_stage_1.pkl"), "rb") as f:
+                config_stage_1 = pickle.load(f) 
 
-    # load model for stage 1 and freeze weights
-    if model.two_stage_training and model.training_stage == 2:
-        with open(os.path.join(config["log_path"], "config_stage_1.pkl"), "rb") as f:
-            config_stage_1 = pickle.load(f) 
+            pretrained_relation_header = FJMP(config_stage_1)
+            model.prepare_for_stage_2(pretrained_relation_header)
         
-        pretrained_relation_header = FJMP(config_stage_1)
-        model.prepare_for_stage_2(pretrained_relation_header)
-    
-    # initialize optimizer
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=model.learning_rate)
-    optimizer = hvd.DistributedOptimizer(
-        optimizer, named_parameters=model.named_parameters()
-    ) 
-    
-    starting_epoch = 1 
-    val_best, ade_best, fde_best, val_edge_acc_best = np.inf, np.inf, np.inf, 0.
-    # resume training from checkpoint
-    if config["resume_training"]:
-        if (not model.two_stage_training) or (model.two_stage_training and model.training_stage == 2):
-            optimizer, starting_epoch, val_best, ade_best, fde_best = model.load_for_train(optimizer)
+        if model.two_stage_training and model.training_stage == 1:
+            model.load_relation_header()
         else:
-            optimizer, starting_epoch, val_edge_acc_best = model.load_for_train_stage_1(optimizer)
-
-    # train model
-    model._train(train_loader, val_loader, optimizer, starting_epoch, val_best, ade_best, fde_best, val_edge_acc_best)
+            model.load_for_eval()
+        # evaluate model
+        results = model._eval(val_loader, 1)
+        print_("Model Results: ", "\t".join([f"{k}: {v}" if type(v) is np.ndarray else f"{k}: {v:.3f}" for k, v in results.items()]))
+    
+    # Evaluate FDE of interactive agents in validation set using constant velocity model
+    elif args.mode == 'eval_constant_velocity':
+        model = FJMP(config)
+        m = sum(p.numel() for p in model.parameters())
+        print_("Evaluating interactive agents on validation set with constant velocity model...")
+        model._eval_constant_velocity(val_loader, config["max_epochs"])
