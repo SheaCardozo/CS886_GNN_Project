@@ -10,8 +10,8 @@ from tqdm import tqdm
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from fjmp_dataloader_argoverse2 import Argoverse2Dataset as Dataset
-from fjmp_utils import *
+from dataloader_argoverse2 import Argoverse2Dataset as Dataset
+from utils import *
 import argparse
 
 parser = argparse.ArgumentParser()

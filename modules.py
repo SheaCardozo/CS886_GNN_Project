@@ -6,7 +6,7 @@ from torch.distributions import Normal
 import dgl.function as fn
 import torch
 from fractions import gcd
-from fjmp_utils import *
+from utils import *
 from lanegcn_modules import *
 
 class LinearRes(nn.Module):

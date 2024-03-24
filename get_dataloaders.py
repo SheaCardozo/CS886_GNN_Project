@@ -3,11 +3,11 @@ import horovod.torch as hvd
 import os
 
 from torch.utils.data import DataLoader
-from fjmp_dataloader_interaction import InteractionDataset
-from fjmp_dataloader_argoverse2 import Argoverse2Dataset
+from dataloader_interaction import InteractionDataset
+from dataloader_argoverse2 import Argoverse2Dataset
 from torch.utils.data.distributed import DistributedSampler
 
-from fjmp_utils import *
+from utils import *
 
 def get_dataloaders(args, config):
     if args.dataset == 'interaction':

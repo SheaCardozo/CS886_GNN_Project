@@ -10,9 +10,9 @@ from tqdm import tqdm
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from fjmp_dataloader_interaction import InteractionDataset as Dataset
-from fjmp_dataloader_interaction import InteractionTestDataset as TestDataset
-from fjmp_utils import *
+from dataloader_interaction import InteractionDataset as Dataset
+from dataloader_interaction import InteractionTestDataset as TestDataset
+from utils import *
 
 torch.manual_seed(0)
 random.seed(0)

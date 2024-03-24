@@ -10,8 +10,8 @@ from pandas import read_csv
 from tqdm import tqdm
 import math
 import matplotlib.pyplot as plt
-from fjmp_utils import *
-from fjmp_metrics import *
+from utils import *
+from metrics import *
 from pathlib import Path
 
 np.set_printoptions(suppress=True)

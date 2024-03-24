@@ -3,10 +3,10 @@ import torch
 import dgl
 import time
 
-from fjmp_modules import *
-from fjmp_utils import *
+from modules import *
+from utils import *
 from dag_utils import *
-from fjmp_metrics import *
+from metrics import *
 
 import horovod.torch as hvd 
 from mpi4py import MPI
@@ -73,10 +73,7 @@ class FJMP(torch.nn.Module):
             self.proposal_decoder = FJMPTrajectoryProposalDecoder(self.config).to(dev)
         
         if (self.two_stage_training and self.training_stage == 2) or not self.two_stage_training:
-            if self.decoder == 'dagnn':
-                self.trajectory_decoder = FJMPAttentionTrajectoryDecoder(self.config).to(dev)
-            elif self.decoder == 'lanegcn':
-                self.trajectory_decoder = LaneGCNHeader(self.config).to(dev)
+            self.trajectory_decoder = LaneGCNHeader(self.config).to(dev)
 
     def process(self, data):
         num_actors = [len(x) for x in data['feats']]

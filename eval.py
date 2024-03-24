@@ -6,12 +6,12 @@ import argparse
 import os, sys
 from pathlib import Path
 
-from fjmp_modules import *
-from fjmp_utils import *
+from modules import *
+from utils import *
 from dag_utils import *
-from fjmp_metrics import *
+from metrics import *
 from fjmp import FJMP
-from fjmp_get_dataloaders import get_dataloaders
+from get_dataloaders import get_dataloaders
 
 import horovod.torch as hvd 
 

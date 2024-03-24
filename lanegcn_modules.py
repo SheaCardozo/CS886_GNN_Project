@@ -4,7 +4,7 @@ from torch.distributions import Normal
 import torch
 import math
 from fractions import gcd
-from fjmp_utils import *
+from utils import *
 
 class Linear(nn.Module):
     def __init__(self, n_in, n_out, norm='GN', ng=32, act=True):
