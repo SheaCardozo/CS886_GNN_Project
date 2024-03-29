@@ -392,3 +392,28 @@ Epoch 99 validation-set results:  val acc: 0.976	val acc 0: 0.982	val acc 1: 0.8
 Training data:  0.00% lr=4.000e-05 loss:162.838
 Training data:  54.05% lr=4.000e-05 loss:209.177
 Epoch 100 validation-set results:  val acc: 0.976	val acc 0: 0.983	val acc 1: 0.825	val acc 2: 0.854
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Loaded preprocessed training data.
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Loaded preprocessed validation data.
+Loaded preprocessed training data.Loaded preprocessed training data.
+
+Loaded preprocessed validation data.
+Loaded preprocessed validation data.
+Loaded preprocessed training data.
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Loaded preprocessed validation data.
+Command line arguments:
+train_relation_header.py
+--max_epochs
+100
+--config_name
+test
+Model: 1391679 parameters
+Training model...
+Training data:  0.00% lr=1.000e-03 loss:24908.789

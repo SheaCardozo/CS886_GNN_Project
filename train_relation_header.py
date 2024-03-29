@@ -11,7 +11,7 @@ from utils import *
 from dag_utils import *
 from metrics import *
 from get_dataloaders import get_dataloaders
-from relation_header import FJMPRelationHeader
+from relation_header import FJMPHeaderEncoderTrainer
 
 import horovod.torch as hvd 
 
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     train_loader, val_loader = get_dataloaders(args, config)
 
     # Running training code
-    model = FJMPRelationHeader(config).to(dev)
+    model = FJMPHeaderEncoderTrainer(config).to(dev)
 
     m = sum(p.numel() for p in model.parameters())
     print_("Command line arguments:")

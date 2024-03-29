@@ -8,27 +8,12 @@ from mpi4py import MPI
 comm = MPI.COMM_WORLD
 dev = 'cuda:{}'.format(0)
 
+
 class FJMPRelationHeader(nn.Module):
     def __init__(self, config):
         super(FJMPRelationHeader, self).__init__()
         self.config = config
-        self.num_train_samples = config["num_train_samples"]
-        self.switch_lr_1 = config["switch_lr_1"]
-        self.switch_lr_2 = config["switch_lr_2"]
-        self.lr_step = config["lr_step"]
-        self.observation_steps = config["observation_steps"]
-        self.log_path = config["log_path"]
-        self.batch_size = config["batch_size"]
-        self.learning_rate = config["lr"]
-        self.max_epochs = config["max_epochs"]
-        self.gamma = config["gamma"]
-        self.weight_0 = config["weight_0"]
-        self.weight_1 = config["weight_1"]
-        self.weight_2 = config["weight_2"]
-        self.rel_coef = config["rel_coef"]
-        self.supervise_vehicles = config["supervise_vehicles"]
-        self.num_proposals = config["num_proposals"]
-
+        
         self.agenttype_enc = Linear(2 * self.config["num_agenttypes"], self.config["h_dim"])
         self.dist = Linear(2, self.config["h_dim"])
         # convert src/dst features to edge features
@@ -38,7 +23,7 @@ class FJMPRelationHeader(nn.Module):
                 LinearRes(self.config['h_dim'], self.config['h_dim']),
                 nn.Linear(self.config['h_dim'], self.config["num_edge_types"]),
             )
-        self.build()
+        
         self.init_weights()
 
     def init_weights(self):
@@ -66,6 +51,29 @@ class FJMPRelationHeader(nn.Module):
         h_1e_out = self.h_1e_out(graph.edata["h_1e"])
         
         return h_1e_out
+
+class FJMPHeaderEncoderTrainer(nn.Module):
+    def __init__(self, config):
+        super(FJMPHeaderEncoderTrainer, self).__init__()
+        self.config = config
+        self.num_train_samples = config["num_train_samples"]
+        self.switch_lr_1 = config["switch_lr_1"]
+        self.switch_lr_2 = config["switch_lr_2"]
+        self.lr_step = config["lr_step"]
+        self.observation_steps = config["observation_steps"]
+        self.log_path = config["log_path"]
+        self.batch_size = config["batch_size"]
+        self.learning_rate = config["lr"]
+        self.max_epochs = config["max_epochs"]
+        self.gamma = config["gamma"]
+        self.weight_0 = config["weight_0"]
+        self.weight_1 = config["weight_1"]
+        self.weight_2 = config["weight_2"]
+        self.rel_coef = config["rel_coef"]
+        self.supervise_vehicles = config["supervise_vehicles"]
+        self.num_proposals = config["num_proposals"]
+
+        self.build()
     
     def _train(self, train_loader, val_loader, optimizer, start_epoch):
 
@@ -94,7 +102,7 @@ class FJMPRelationHeader(nn.Module):
                 dgl_graph = self.init_dgl_graph(dd['batch_idxs'], dd['ctrs'], dd['orig'], dd['rot'], dd["agenttypes"], dd['world_locs'], dd['has_preds']).to(dev)
                 dgl_graph = self.feature_encoder(dgl_graph, dd['feats'][:,:self.observation_steps], dd['agenttypes'], dd['actor_idcs'], dd['actor_ctrs'], dd['lane_graph'])
 
-                edge_logits = self.forward(dgl_graph)
+                edge_logits = self.relation_header(dgl_graph)
 
 
                 dgl_graph.edata["edge_logits"] = edge_logits
@@ -153,9 +161,8 @@ class FJMPRelationHeader(nn.Module):
                 dgl_graph = self.init_dgl_graph(dd['batch_idxs'], dd['ctrs'], dd['orig'], dd['rot'], dd['agenttypes'], dd['world_locs'], dd['has_preds']).to(dev)
                 dgl_graph = self.feature_encoder(dgl_graph, dd['feats'][:,:self.observation_steps], dd['agenttypes'], dd['actor_idcs'], dd['actor_ctrs'], dd['lane_graph'])
 
-                edge_logits = self.forward(dgl_graph)
+                edge_logits = self.relation_header(dgl_graph)
 
-                
                 dgl_graph.edata["edge_logits"] = edge_logits
 
                 all_edges = [x.unsqueeze(1) for x in dgl_graph.edges('all')]
@@ -187,12 +194,14 @@ class FJMPRelationHeader(nn.Module):
         return np.mean(comm.allgather(relation_accuracy)), np.mean(comm.allgather(edge_accuracy_0)), np.mean(comm.allgather(edge_accuracy_1)), np.mean(comm.allgather(edge_accuracy_2))
     
         
-    def save_relation_header(self, epoch, optimizer, val_edge_acc_best):
+    def save_models(self, epoch, optimizer, val_edge_acc_best):
         # save best model to pt file
-        path = self.log_path / "best_model_relation_header.pt"
+        path = self.log_path / "best_models.pt"
         state = {
             'epoch': epoch,
-            'state_dict': self.state_dict(),
+            'relation_state_dict': self.relation_header.state_dict(),
+            'feature_state_dict': self.feature_encoder.state_dict(),
+            'proposal_state_dict': self.proposal_decoder.state_dict(),
             'optimizer': optimizer.state_dict(),
             'val_edge_acc_best': val_edge_acc_best
             }
@@ -236,7 +245,7 @@ class FJMPRelationHeader(nn.Module):
 
 
     def build(self):
-
+        self.relation_header = FJMPRelationHeader(self.config).to(dev) 
         self.feature_encoder = FJMPFeatureEncoder(self.config).to(dev)
         self.proposal_decoder = FJMPTrajectoryProposalDecoder(self.config).to(dev)
         
