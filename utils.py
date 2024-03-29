@@ -353,3 +353,164 @@ def sign_func(x):
         return -1.
     else:
         return 0.
+
+def process_data(data, config):
+    num_actors = [len(x) for x in data['feats']]
+    num_edges = [int(n * (n-1) / 2) for n in num_actors]
+
+    # LaneGCN processing 
+    # ctrs gets copied once for each agent in scene, whereas actor_ctrs only contains one per scene
+    # same data, but different format so that it is compatible with LaneGCN L2A/A2A function     
+    actor_ctrs = gpu(data["ctrs"])
+    lane_graph = graph_gather(to_long(gpu(data["graph"])), config)
+    # unique index assigned to each scene
+    scene_idxs = torch.Tensor([idx for idx in data['idx']])
+
+    graph = data["graph"]
+
+    world_locs = [x for x in data['feat_locs']]
+    world_locs = torch.cat(world_locs, 0)
+
+    has_obs = [x for x in data['has_obss']]
+    has_obs = torch.cat(has_obs, 0)
+
+    ig_labels = [x for x in data['ig_labels_{}'.format(config['ig'])]]
+    ig_labels = torch.cat(ig_labels, 0)
+
+    if config["dataset"] == "argoverse2":
+        agentcategories = [x for x in data['feat_agentcategories']]
+        # we know the agent category exists at the present timestep
+        agentcategories = torch.cat(agentcategories, 0)[:, config["observation_steps"] - 1, 0]
+        # we consider scored+focal tracks for evaluation in Argoverse 2
+        is_scored = agentcategories >= 2
+
+    locs = [x for x in data['feats']]
+    locs = torch.cat(locs, 0)
+
+    vels = [x for x in data['feat_vels']]
+    vels = torch.cat(vels, 0)
+
+    psirads = [x for x in data['feat_psirads']]
+    psirads = torch.cat(psirads, 0)
+
+    gt_psirads = [x for x in data['gt_psirads']]
+    gt_psirads = torch.cat(gt_psirads, 0)
+
+    gt_vels = [x for x in data['gt_vels']]
+    gt_vels = torch.cat(gt_vels, 0)
+
+    agenttypes = [x for x in data['feat_agenttypes']]
+    agenttypes = torch.cat(agenttypes, 0)[:, config["observation_steps"] - 1, 0]
+    agenttypes = torch.nn.functional.one_hot(agenttypes.long(), config["num_agenttypes"])
+
+    # shape information is only available in INTERACTION dataset
+    if config["dataset"] == "interaction":
+        shapes = [x for x in data['feat_shapes']]
+        shapes = torch.cat(shapes, 0)
+
+    feats = torch.cat([locs, vels, psirads], dim=2)
+
+    ctrs = [x for x in data['ctrs']]
+    ctrs = torch.cat(ctrs, 0)
+
+    orig = [x.view(1, 2) for j, x in enumerate(data['orig']) for i in range(num_actors[j])]
+    orig = torch.cat(orig, 0)
+
+    rot = [x.view(1, 2, 2) for j, x in enumerate(data['rot']) for i in range(num_actors[j])]
+    rot = torch.cat(rot, 0)
+
+    theta = torch.Tensor([x for j, x in enumerate(data['theta']) for i in range(num_actors[j])])
+
+    gt_locs = [x for x in data['gt_preds']]
+    gt_locs = torch.cat(gt_locs, 0)
+
+    has_preds = [x for x in data['has_preds']]
+    has_preds = torch.cat(has_preds, 0)
+
+    # does a ground-truth waypoint exist at the last timestep?
+    has_last = has_preds[:, -1] == 1
+    
+    batch_idxs = []
+    batch_idxs_edges = []
+    actor_idcs = []
+    sceneidx_to_batchidx_mapping = {}
+    count_batchidx = 0
+    count = 0
+    for i in range(len(num_actors)):            
+        batch_idxs.append(torch.ones(num_actors[i]) * count_batchidx)
+        batch_idxs_edges.append(torch.ones(num_edges[i]) * count_batchidx)
+        sceneidx_to_batchidx_mapping[int(scene_idxs[i].item())] = count_batchidx
+        idcs = torch.arange(count, count + num_actors[i]).to(locs.device)
+        actor_idcs.append(idcs)
+        
+        count_batchidx += 1
+        count += num_actors[i]
+    
+    batch_idxs = torch.cat(batch_idxs).to(locs.device)
+    batch_idxs_edges = torch.cat(batch_idxs_edges).to(locs.device)
+    batch_size = torch.unique(batch_idxs).shape[0]
+
+    ig_labels_metrics = [x for x in data['ig_labels_sparse']]
+    ig_labels_metrics = torch.cat(ig_labels_metrics, 0)
+
+    # 1 if agent has out-or-ingoing edge in ground-truth sparse interaction graph
+    # These are the agents we use to evaluate interactive metrics
+    is_connected = torch.zeros(locs.shape[0])
+    count = 0
+    offset = 0
+    for k in range(len(num_actors)):
+        N = num_actors[k]
+        for i in range(N):
+            for j in range(N):
+                if i >= j:
+                    continue 
+                
+                # either an influencer or reactor in some DAG.
+                if ig_labels_metrics[count] > 0:                      
+
+                    is_connected[offset + i] += 1
+                    is_connected[offset + j] += 1 
+
+                count += 1
+        offset += N
+
+    is_connected = is_connected > 0     
+
+    assert count == ig_labels_metrics.shape[0]
+
+    dd = {
+        'batch_size': batch_size,
+        'batch_idxs': batch_idxs,
+        'batch_idxs_edges': batch_idxs_edges, 
+        'actor_idcs': actor_idcs,
+        'actor_ctrs': actor_ctrs,
+        'lane_graph': lane_graph,
+        'feats': feats,
+        'feat_psirads': psirads,
+        'ctrs': ctrs,
+        'orig': orig,
+        'rot': rot,
+        'theta': theta,
+        'gt_locs': gt_locs,
+        'has_preds': has_preds,
+        'scene_idxs': scene_idxs,
+        'sceneidx_to_batchidx_mapping': sceneidx_to_batchidx_mapping,
+        'ig_labels': ig_labels,
+        'gt_psirads': gt_psirads,
+        'gt_vels': gt_vels,
+        'agenttypes': agenttypes,
+        'world_locs': world_locs,
+        'has_obs': has_obs,
+        'has_last': has_last,
+        'graph': graph,
+        'is_connected': is_connected
+    }
+
+    if config["dataset"] == "interaction":
+        dd['shapes'] = shapes
+
+    elif config["dataset"] == "argoverse2":
+        dd['is_scored'] = is_scored
+
+    # dd = data-dictionary
+    return dd

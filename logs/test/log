@@ -1,0 +1,394 @@
+Loaded preprocessed training data.Loaded preprocessed training data.
+
+Loaded preprocessed training data.
+Loaded preprocessed training data.
+Loaded preprocessed validation data.Loaded preprocessed validation data.Loaded preprocessed validation data.
+
+
+Loaded preprocessed validation data.
+Command line arguments:
+train_relation_header.py
+--max_epochs
+100
+--config_name
+test
+Model: 1391679 parameters
+Training model...
+Training data:  0.00% lr=1.000e-03 loss:24402.904
+Training data:  54.05% lr=1.000e-03 loss:6050.055
+Epoch 1 validation-set results:  val acc: 0.945	val acc 0: 0.976	val acc 1: 0.118	val acc 2: 0.663
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9452
+Training data:  0.00% lr=1.000e-03 loss:3161.172
+Training data:  54.05% lr=1.000e-03 loss:1764.045
+Epoch 2 validation-set results:  val acc: 0.947	val acc 0: 0.977	val acc 1: 0.116	val acc 2: 0.748
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9468
+Training data:  0.00% lr=1.000e-03 loss:1398.232
+Training data:  54.05% lr=1.000e-03 loss:1185.478
+Epoch 3 validation-set results:  val acc: 0.952	val acc 0: 0.977	val acc 1: 0.382	val acc 2: 0.248
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9522
+Training data:  0.00% lr=1.000e-03 loss:4599.173
+Training data:  54.05% lr=1.000e-03 loss:1092.569
+Epoch 4 validation-set results:  val acc: 0.953	val acc 0: 0.975	val acc 1: 0.407	val acc 2: 0.572
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9533
+Training data:  0.00% lr=1.000e-03 loss:1822.704
+Training data:  54.05% lr=1.000e-03 loss:862.537
+Epoch 5 validation-set results:  val acc: 0.958	val acc 0: 0.977	val acc 1: 0.505	val acc 2: 0.526
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9581
+Training data:  0.00% lr=1.000e-03 loss:772.975
+Training data:  54.05% lr=1.000e-03 loss:726.116
+Epoch 6 validation-set results:  val acc: 0.960	val acc 0: 0.992	val acc 1: 0.179	val acc 2: 0.320
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9597
+Training data:  0.00% lr=1.000e-03 loss:706.202
+Training data:  54.05% lr=1.000e-03 loss:686.208
+Epoch 7 validation-set results:  val acc: 0.959	val acc 0: 0.981	val acc 1: 0.409	val acc 2: 0.609
+Training data:  0.00% lr=1.000e-03 loss:626.424
+Training data:  54.05% lr=1.000e-03 loss:627.500
+Epoch 8 validation-set results:  val acc: 0.961	val acc 0: 0.987	val acc 1: 0.303	val acc 2: 0.430
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9606
+Training data:  0.00% lr=1.000e-03 loss:700.709
+Training data:  54.05% lr=1.000e-03 loss:523.982
+Epoch 9 validation-set results:  val acc: 0.959	val acc 0: 0.986	val acc 1: 0.249	val acc 2: 0.727
+Training data:  0.00% lr=1.000e-03 loss:480.408
+Training data:  54.05% lr=1.000e-03 loss:552.980
+Epoch 10 validation-set results:  val acc: 0.955	val acc 0: 0.972	val acc 1: 0.522	val acc 2: 0.798
+Training data:  0.00% lr=1.000e-03 loss:722.022
+Training data:  54.05% lr=1.000e-03 loss:640.670
+Epoch 11 validation-set results:  val acc: 0.961	val acc 0: 0.992	val acc 1: 0.153	val acc 2: 0.610
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9610
+Training data:  0.00% lr=1.000e-03 loss:676.750
+Training data:  54.05% lr=1.000e-03 loss:471.891
+Epoch 12 validation-set results:  val acc: 0.962	val acc 0: 0.977	val acc 1: 0.579	val acc 2: 0.692
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9618
+Training data:  0.00% lr=1.000e-03 loss:471.474
+Training data:  54.05% lr=1.000e-03 loss:507.770
+Epoch 13 validation-set results:  val acc: 0.962	val acc 0: 0.988	val acc 1: 0.301	val acc 2: 0.654
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9623
+Training data:  0.00% lr=1.000e-03 loss:535.926
+Training data:  54.05% lr=1.000e-03 loss:553.334
+Epoch 14 validation-set results:  val acc: 0.966	val acc 0: 0.989	val acc 1: 0.403	val acc 2: 0.515
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9661
+Training data:  0.00% lr=1.000e-03 loss:580.896
+Training data:  54.05% lr=1.000e-03 loss:479.590
+Epoch 15 validation-set results:  val acc: 0.951	val acc 0: 0.958	val acc 1: 0.780	val acc 2: 0.870
+Training data:  0.00% lr=1.000e-03 loss:459.061
+Training data:  54.05% lr=1.000e-03 loss:486.454
+Epoch 16 validation-set results:  val acc: 0.965	val acc 0: 0.980	val acc 1: 0.621	val acc 2: 0.632
+Training data:  0.00% lr=1.000e-03 loss:440.780
+Training data:  54.05% lr=1.000e-03 loss:446.651
+Epoch 17 validation-set results:  val acc: 0.958	val acc 0: 0.973	val acc 1: 0.550	val acc 2: 0.806
+Training data:  0.00% lr=1.000e-03 loss:542.743
+Training data:  54.05% lr=1.000e-03 loss:488.211
+Epoch 18 validation-set results:  val acc: 0.949	val acc 0: 0.960	val acc 1: 0.714	val acc 2: 0.526
+Training data:  0.00% lr=1.000e-03 loss:432.648
+Training data:  54.05% lr=1.000e-03 loss:759.638
+Epoch 19 validation-set results:  val acc: 0.964	val acc 0: 0.975	val acc 1: 0.709	val acc 2: 0.597
+Training data:  0.00% lr=1.000e-03 loss:427.321
+Training data:  54.05% lr=1.000e-03 loss:1674.675
+Epoch 20 validation-set results:  val acc: 0.963	val acc 0: 0.976	val acc 1: 0.648	val acc 2: 0.788
+Training data:  0.00% lr=1.000e-03 loss:416.008
+Training data:  54.05% lr=1.000e-03 loss:533.867
+Epoch 21 validation-set results:  val acc: 0.964	val acc 0: 0.972	val acc 1: 0.769	val acc 2: 0.730
+Training data:  0.00% lr=1.000e-03 loss:427.534
+Training data:  54.05% lr=1.000e-03 loss:459.106
+Epoch 22 validation-set results:  val acc: 0.956	val acc 0: 0.962	val acc 1: 0.797	val acc 2: 0.846
+Training data:  0.00% lr=1.000e-03 loss:560.708
+Training data:  54.05% lr=1.000e-03 loss:414.094
+Epoch 23 validation-set results:  val acc: 0.968	val acc 0: 0.981	val acc 1: 0.677	val acc 2: 0.575
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9676
+Training data:  0.00% lr=1.000e-03 loss:443.111
+Training data:  54.05% lr=1.000e-03 loss:425.901
+Epoch 24 validation-set results:  val acc: 0.965	val acc 0: 0.975	val acc 1: 0.726	val acc 2: 0.786
+Training data:  0.00% lr=1.000e-03 loss:363.556
+Training data:  54.05% lr=1.000e-03 loss:540.921
+Epoch 25 validation-set results:  val acc: 0.971	val acc 0: 0.989	val acc 1: 0.524	val acc 2: 0.585
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9706
+Training data:  0.00% lr=1.000e-03 loss:352.842
+Training data:  54.05% lr=1.000e-03 loss:558.196
+Epoch 26 validation-set results:  val acc: 0.965	val acc 0: 0.981	val acc 1: 0.518	val acc 2: 0.821
+Training data:  0.00% lr=1.000e-03 loss:348.508
+Training data:  54.05% lr=1.000e-03 loss:314.636
+Epoch 27 validation-set results:  val acc: 0.970	val acc 0: 0.984	val acc 1: 0.611	val acc 2: 0.745
+Training data:  0.00% lr=1.000e-03 loss:449.663
+Training data:  54.05% lr=1.000e-03 loss:525.607
+Epoch 28 validation-set results:  val acc: 0.954	val acc 0: 0.959	val acc 1: 0.828	val acc 2: 0.793
+Training data:  0.00% lr=1.000e-03 loss:398.517
+Training data:  54.05% lr=1.000e-03 loss:345.295
+Epoch 29 validation-set results:  val acc: 0.960	val acc 0: 0.969	val acc 1: 0.707	val acc 2: 0.870
+Training data:  0.00% lr=1.000e-03 loss:324.324
+Training data:  54.05% lr=1.000e-03 loss:391.570
+Epoch 30 validation-set results:  val acc: 0.968	val acc 0: 0.985	val acc 1: 0.512	val acc 2: 0.788
+Training data:  0.00% lr=1.000e-03 loss:392.510
+Training data:  54.05% lr=1.000e-03 loss:369.579
+Epoch 31 validation-set results:  val acc: 0.970	val acc 0: 0.982	val acc 1: 0.697	val acc 2: 0.717
+Training data:  0.00% lr=1.000e-03 loss:362.212
+Training data:  54.05% lr=1.000e-03 loss:350.288
+Epoch 32 validation-set results:  val acc: 0.964	val acc 0: 0.985	val acc 1: 0.417	val acc 2: 0.764
+Training data:  0.00% lr=1.000e-03 loss:324.935
+Training data:  54.05% lr=1.000e-03 loss:373.233
+Epoch 33 validation-set results:  val acc: 0.966	val acc 0: 0.990	val acc 1: 0.307	val acc 2: 0.768
+Training data:  0.00% lr=1.000e-03 loss:410.790
+Training data:  54.05% lr=1.000e-03 loss:388.044
+Epoch 34 validation-set results:  val acc: 0.964	val acc 0: 0.970	val acc 1: 0.804	val acc 2: 0.821
+Training data:  0.00% lr=1.000e-03 loss:297.225
+Training data:  54.05% lr=1.000e-03 loss:386.693
+Epoch 35 validation-set results:  val acc: 0.973	val acc 0: 0.984	val acc 1: 0.693	val acc 2: 0.740
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9730
+Training data:  0.00% lr=1.000e-03 loss:354.081
+Training data:  54.05% lr=1.000e-03 loss:377.460
+Epoch 36 validation-set results:  val acc: 0.972	val acc 0: 0.983	val acc 1: 0.713	val acc 2: 0.750
+Training data:  0.00% lr=1.000e-03 loss:329.323
+Training data:  54.05% lr=1.000e-03 loss:323.834
+Epoch 37 validation-set results:  val acc: 0.961	val acc 0: 0.979	val acc 1: 0.511	val acc 2: 0.713
+Training data:  0.00% lr=1.000e-03 loss:322.344
+Training data:  54.05% lr=1.000e-03 loss:273.754
+Epoch 38 validation-set results:  val acc: 0.964	val acc 0: 0.971	val acc 1: 0.793	val acc 2: 0.806
+Training data:  0.00% lr=1.000e-03 loss:383.198
+Training data:  54.05% lr=1.000e-03 loss:299.153
+Epoch 39 validation-set results:  val acc: 0.967	val acc 0: 0.975	val acc 1: 0.761	val acc 2: 0.858
+Training data:  0.00% lr=2.000e-04 loss:386.401
+Training data:  54.05% lr=2.000e-04 loss:216.241
+Epoch 40 validation-set results:  val acc: 0.973	val acc 0: 0.981	val acc 1: 0.774	val acc 2: 0.838
+Training data:  0.00% lr=2.000e-04 loss:227.967
+Training data:  54.05% lr=2.000e-04 loss:254.812
+Epoch 41 validation-set results:  val acc: 0.973	val acc 0: 0.980	val acc 1: 0.803	val acc 2: 0.833
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9731
+Training data:  0.00% lr=2.000e-04 loss:256.810
+Training data:  54.05% lr=2.000e-04 loss:190.751
+Epoch 42 validation-set results:  val acc: 0.974	val acc 0: 0.981	val acc 1: 0.800	val acc 2: 0.831
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9736
+Training data:  0.00% lr=2.000e-04 loss:258.545
+Training data:  54.05% lr=2.000e-04 loss:255.596
+Epoch 43 validation-set results:  val acc: 0.969	val acc 0: 0.974	val acc 1: 0.848	val acc 2: 0.853
+Training data:  0.00% lr=2.000e-04 loss:207.951
+Training data:  54.05% lr=2.000e-04 loss:241.834
+Epoch 44 validation-set results:  val acc: 0.975	val acc 0: 0.984	val acc 1: 0.770	val acc 2: 0.776
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9751
+Training data:  0.00% lr=2.000e-04 loss:192.897
+Training data:  54.05% lr=2.000e-04 loss:252.082
+Epoch 45 validation-set results:  val acc: 0.974	val acc 0: 0.982	val acc 1: 0.783	val acc 2: 0.792
+Training data:  0.00% lr=2.000e-04 loss:240.287
+Training data:  54.05% lr=2.000e-04 loss:243.950
+Epoch 46 validation-set results:  val acc: 0.975	val acc 0: 0.985	val acc 1: 0.725	val acc 2: 0.822
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9752
+Training data:  0.00% lr=2.000e-04 loss:192.534
+Training data:  54.05% lr=2.000e-04 loss:239.698
+Epoch 47 validation-set results:  val acc: 0.975	val acc 0: 0.983	val acc 1: 0.779	val acc 2: 0.807
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9753
+Training data:  0.00% lr=4.000e-05 loss:238.566
+Training data:  54.05% lr=4.000e-05 loss:252.845
+Epoch 48 validation-set results:  val acc: 0.975	val acc 0: 0.982	val acc 1: 0.799	val acc 2: 0.842
+Training data:  0.00% lr=4.000e-05 loss:214.523
+Training data:  54.05% lr=4.000e-05 loss:227.530
+Epoch 49 validation-set results:  val acc: 0.975	val acc 0: 0.981	val acc 1: 0.803	val acc 2: 0.842
+Training data:  0.00% lr=4.000e-05 loss:195.227
+Training data:  54.05% lr=4.000e-05 loss:184.449
+Epoch 50 validation-set results:  val acc: 0.975	val acc 0: 0.982	val acc 1: 0.808	val acc 2: 0.826
+Training data:  0.00% lr=4.000e-05 loss:226.792
+Training data:  54.05% lr=4.000e-05 loss:221.921
+Epoch 51 validation-set results:  val acc: 0.975	val acc 0: 0.983	val acc 1: 0.794	val acc 2: 0.829
+Training data:  0.00% lr=4.000e-05 loss:231.714
+Training data:  54.05% lr=4.000e-05 loss:181.060
+Epoch 52 validation-set results:  val acc: 0.974	val acc 0: 0.980	val acc 1: 0.825	val acc 2: 0.837
+Training data:  0.00% lr=4.000e-05 loss:201.257
+Training data:  54.05% lr=4.000e-05 loss:188.921
+Epoch 53 validation-set results:  val acc: 0.974	val acc 0: 0.981	val acc 1: 0.804	val acc 2: 0.855
+Training data:  0.00% lr=4.000e-05 loss:213.719
+Training data:  54.05% lr=4.000e-05 loss:213.956
+Epoch 54 validation-set results:  val acc: 0.976	val acc 0: 0.984	val acc 1: 0.757	val acc 2: 0.845
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9758
+Training data:  0.00% lr=4.000e-05 loss:185.971
+Training data:  54.05% lr=4.000e-05 loss:219.735
+Epoch 55 validation-set results:  val acc: 0.975	val acc 0: 0.982	val acc 1: 0.794	val acc 2: 0.851
+Training data:  0.00% lr=4.000e-05 loss:185.692
+Training data:  54.05% lr=4.000e-05 loss:198.917
+Epoch 56 validation-set results:  val acc: 0.975	val acc 0: 0.983	val acc 1: 0.787	val acc 2: 0.846
+Training data:  0.00% lr=4.000e-05 loss:243.666
+Training data:  54.05% lr=4.000e-05 loss:206.382
+Epoch 57 validation-set results:  val acc: 0.976	val acc 0: 0.983	val acc 1: 0.790	val acc 2: 0.831
+Training data:  0.00% lr=4.000e-05 loss:209.389
+Training data:  54.05% lr=4.000e-05 loss:192.799
+Epoch 58 validation-set results:  val acc: 0.975	val acc 0: 0.981	val acc 1: 0.807	val acc 2: 0.858
+Training data:  0.00% lr=4.000e-05 loss:192.627
+Training data:  54.05% lr=4.000e-05 loss:188.528
+Epoch 59 validation-set results:  val acc: 0.974	val acc 0: 0.979	val acc 1: 0.837	val acc 2: 0.845
+Training data:  0.00% lr=4.000e-05 loss:218.237
+Training data:  54.05% lr=4.000e-05 loss:205.455
+Epoch 60 validation-set results:  val acc: 0.975	val acc 0: 0.982	val acc 1: 0.804	val acc 2: 0.816
+Training data:  0.00% lr=4.000e-05 loss:219.824
+Training data:  54.05% lr=4.000e-05 loss:183.810
+Epoch 61 validation-set results:  val acc: 0.975	val acc 0: 0.981	val acc 1: 0.819	val acc 2: 0.838
+Training data:  0.00% lr=4.000e-05 loss:187.791
+Training data:  54.05% lr=4.000e-05 loss:211.034
+Epoch 62 validation-set results:  val acc: 0.976	val acc 0: 0.984	val acc 1: 0.785	val acc 2: 0.838
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9759
+Training data:  0.00% lr=4.000e-05 loss:184.674
+Training data:  54.05% lr=4.000e-05 loss:204.057
+Epoch 63 validation-set results:  val acc: 0.975	val acc 0: 0.982	val acc 1: 0.804	val acc 2: 0.854
+Training data:  0.00% lr=4.000e-05 loss:204.006
+Training data:  54.05% lr=4.000e-05 loss:167.027
+Epoch 64 validation-set results:  val acc: 0.975	val acc 0: 0.981	val acc 1: 0.820	val acc 2: 0.835
+Training data:  0.00% lr=4.000e-05 loss:194.773
+Training data:  54.05% lr=4.000e-05 loss:192.150
+Epoch 65 validation-set results:  val acc: 0.976	val acc 0: 0.982	val acc 1: 0.810	val acc 2: 0.834
+Training data:  0.00% lr=4.000e-05 loss:240.461
+Training data:  54.05% lr=4.000e-05 loss:198.744
+Epoch 66 validation-set results:  val acc: 0.976	val acc 0: 0.983	val acc 1: 0.805	val acc 2: 0.821
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9760
+Training data:  0.00% lr=4.000e-05 loss:187.071
+Training data:  54.05% lr=4.000e-05 loss:210.872
+Epoch 67 validation-set results:  val acc: 0.975	val acc 0: 0.981	val acc 1: 0.826	val acc 2: 0.848
+Training data:  0.00% lr=4.000e-05 loss:181.082
+Training data:  54.05% lr=4.000e-05 loss:185.838
+Epoch 68 validation-set results:  val acc: 0.974	val acc 0: 0.980	val acc 1: 0.842	val acc 2: 0.826
+Training data:  0.00% lr=4.000e-05 loss:185.363
+Training data:  54.05% lr=4.000e-05 loss:176.560
+Epoch 69 validation-set results:  val acc: 0.975	val acc 0: 0.982	val acc 1: 0.815	val acc 2: 0.855
+Training data:  0.00% lr=4.000e-05 loss:189.128
+Training data:  54.05% lr=4.000e-05 loss:172.996
+Epoch 70 validation-set results:  val acc: 0.975	val acc 0: 0.982	val acc 1: 0.800	val acc 2: 0.870
+Training data:  0.00% lr=4.000e-05 loss:228.441
+Training data:  54.05% lr=4.000e-05 loss:156.140
+Epoch 71 validation-set results:  val acc: 0.975	val acc 0: 0.981	val acc 1: 0.828	val acc 2: 0.846
+Training data:  0.00% lr=4.000e-05 loss:167.951
+Training data:  54.05% lr=4.000e-05 loss:211.355
+Epoch 72 validation-set results:  val acc: 0.976	val acc 0: 0.983	val acc 1: 0.805	val acc 2: 0.843
+Training data:  0.00% lr=4.000e-05 loss:172.046
+Training data:  54.05% lr=4.000e-05 loss:163.837
+Epoch 73 validation-set results:  val acc: 0.976	val acc 0: 0.983	val acc 1: 0.807	val acc 2: 0.810
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9764
+Training data:  0.00% lr=4.000e-05 loss:169.362
+Training data:  54.05% lr=4.000e-05 loss:179.073
+Epoch 74 validation-set results:  val acc: 0.975	val acc 0: 0.981	val acc 1: 0.831	val acc 2: 0.845
+Training data:  0.00% lr=4.000e-05 loss:190.319
+Training data:  54.05% lr=4.000e-05 loss:152.998
+Epoch 75 validation-set results:  val acc: 0.976	val acc 0: 0.982	val acc 1: 0.822	val acc 2: 0.836
+Training data:  0.00% lr=4.000e-05 loss:199.366
+Training data:  54.05% lr=4.000e-05 loss:167.419
+Epoch 76 validation-set results:  val acc: 0.976	val acc 0: 0.982	val acc 1: 0.826	val acc 2: 0.829
+Training data:  0.00% lr=4.000e-05 loss:178.950
+Training data:  54.05% lr=4.000e-05 loss:180.971
+Epoch 77 validation-set results:  val acc: 0.975	val acc 0: 0.982	val acc 1: 0.816	val acc 2: 0.860
+Training data:  0.00% lr=4.000e-05 loss:190.191
+Training data:  54.05% lr=4.000e-05 loss:193.686
+Epoch 78 validation-set results:  val acc: 0.977	val acc 0: 0.984	val acc 1: 0.789	val acc 2: 0.852
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9765
+Training data:  0.00% lr=4.000e-05 loss:214.240
+Training data:  54.05% lr=4.000e-05 loss:210.354
+Epoch 79 validation-set results:  val acc: 0.976	val acc 0: 0.983	val acc 1: 0.794	val acc 2: 0.872
+Training data:  0.00% lr=4.000e-05 loss:204.668
+Training data:  54.05% lr=4.000e-05 loss:173.633
+Epoch 80 validation-set results:  val acc: 0.976	val acc 0: 0.982	val acc 1: 0.816	val acc 2: 0.855
+Training data:  0.00% lr=4.000e-05 loss:183.829
+Training data:  54.05% lr=4.000e-05 loss:175.246
+Epoch 81 validation-set results:  val acc: 0.976	val acc 0: 0.983	val acc 1: 0.819	val acc 2: 0.832
+Training data:  0.00% lr=4.000e-05 loss:194.738
+Training data:  54.05% lr=4.000e-05 loss:171.566
+Epoch 82 validation-set results:  val acc: 0.976	val acc 0: 0.982	val acc 1: 0.816	val acc 2: 0.853
+Training data:  0.00% lr=4.000e-05 loss:177.247
+Training data:  54.05% lr=4.000e-05 loss:173.938
+Epoch 83 validation-set results:  val acc: 0.976	val acc 0: 0.982	val acc 1: 0.835	val acc 2: 0.818
+Training data:  0.00% lr=4.000e-05 loss:209.337
+Training data:  54.05% lr=4.000e-05 loss:228.672
+Epoch 84 validation-set results:  val acc: 0.976	val acc 0: 0.984	val acc 1: 0.788	val acc 2: 0.870
+Training data:  0.00% lr=4.000e-05 loss:202.170
+Training data:  54.05% lr=4.000e-05 loss:176.685
+Epoch 85 validation-set results:  val acc: 0.976	val acc 0: 0.982	val acc 1: 0.822	val acc 2: 0.845
+Training data:  0.00% lr=4.000e-05 loss:161.170
+Training data:  54.05% lr=4.000e-05 loss:202.162
+Epoch 86 validation-set results:  val acc: 0.977	val acc 0: 0.985	val acc 1: 0.790	val acc 2: 0.843
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9772
+Training data:  0.00% lr=4.000e-05 loss:184.092
+Training data:  54.05% lr=4.000e-05 loss:192.826
+Epoch 87 validation-set results:  val acc: 0.976	val acc 0: 0.982	val acc 1: 0.825	val acc 2: 0.835
+Training data:  0.00% lr=4.000e-05 loss:179.452
+Training data:  54.05% lr=4.000e-05 loss:228.725
+Epoch 88 validation-set results:  val acc: 0.977	val acc 0: 0.984	val acc 1: 0.791	val acc 2: 0.848
+Training data:  0.00% lr=4.000e-05 loss:161.850
+Training data:  54.05% lr=4.000e-05 loss:169.097
+Epoch 89 validation-set results:  val acc: 0.976	val acc 0: 0.982	val acc 1: 0.833	val acc 2: 0.841
+Training data:  0.00% lr=4.000e-05 loss:180.574
+Training data:  54.05% lr=4.000e-05 loss:199.800
+Epoch 90 validation-set results:  val acc: 0.977	val acc 0: 0.984	val acc 1: 0.806	val acc 2: 0.842
+Training data:  0.00% lr=4.000e-05 loss:188.572
+Training data:  54.05% lr=4.000e-05 loss:162.222
+Epoch 91 validation-set results:  val acc: 0.977	val acc 0: 0.984	val acc 1: 0.807	val acc 2: 0.833
+Training data:  0.00% lr=4.000e-05 loss:173.806
+Training data:  54.05% lr=4.000e-05 loss:185.874
+Epoch 92 validation-set results:  val acc: 0.977	val acc 0: 0.984	val acc 1: 0.802	val acc 2: 0.836
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9772
+Training data:  0.00% lr=4.000e-05 loss:201.634
+Training data:  54.05% lr=4.000e-05 loss:169.528
+Epoch 93 validation-set results:  val acc: 0.976	val acc 0: 0.982	val acc 1: 0.833	val acc 2: 0.834
+Training data:  0.00% lr=4.000e-05 loss:184.268
+Training data:  54.05% lr=4.000e-05 loss:192.510
+Epoch 94 validation-set results:  val acc: 0.977	val acc 0: 0.984	val acc 1: 0.812	val acc 2: 0.837
+Training data:  0.00% lr=4.000e-05 loss:153.277
+Training data:  54.05% lr=4.000e-05 loss:194.750
+Epoch 95 validation-set results:  val acc: 0.977	val acc 0: 0.983	val acc 1: 0.816	val acc 2: 0.847
+Training data:  0.00% lr=4.000e-05 loss:173.945
+Training data:  54.05% lr=4.000e-05 loss:161.351
+Epoch 96 validation-set results:  val acc: 0.977	val acc 0: 0.983	val acc 1: 0.820	val acc 2: 0.848
+Training data:  0.00% lr=4.000e-05 loss:143.382
+Training data:  54.05% lr=4.000e-05 loss:159.042
+Epoch 97 validation-set results:  val acc: 0.977	val acc 0: 0.984	val acc 1: 0.804	val acc 2: 0.864
+Training data:  0.00% lr=4.000e-05 loss:174.592
+Training data:  54.05% lr=4.000e-05 loss:147.646
+Epoch 98 validation-set results:  val acc: 0.977	val acc 0: 0.983	val acc 1: 0.816	val acc 2: 0.838
+Training data:  0.00% lr=4.000e-05 loss:162.687
+Training data:  54.05% lr=4.000e-05 loss:183.034
+Epoch 99 validation-set results:  val acc: 0.976	val acc 0: 0.982	val acc 1: 0.829	val acc 2: 0.838
+Training data:  0.00% lr=4.000e-05 loss:162.838
+Training data:  54.05% lr=4.000e-05 loss:209.177
+Epoch 100 validation-set results:  val acc: 0.976	val acc 0: 0.983	val acc 1: 0.825	val acc 2: 0.854

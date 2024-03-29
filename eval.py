@@ -10,7 +10,7 @@ from modules import *
 from utils import *
 from dag_utils import *
 from metrics import *
-from fjmp import FJMP
+from gnn import GNN
 from get_dataloaders import get_dataloaders
 
 import horovod.torch as hvd 
@@ -112,7 +112,7 @@ if __name__ == '__main__':
 
     # Running training code
     if args.mode == 'eval':
-        model = FJMP(config)
+        model = GNN(config)
         m = sum(p.numel() for p in model.parameters())
         print_("Model: {} parameters".format(m))
         print_("Evaluating model...")
@@ -122,7 +122,7 @@ if __name__ == '__main__':
             with open(os.path.join(config["log_path"], "config_stage_1.pkl"), "rb") as f:
                 config_stage_1 = pickle.load(f) 
 
-            pretrained_relation_header = FJMP(config_stage_1)
+            pretrained_relation_header = GNN(config_stage_1)
             model.prepare_for_stage_2(pretrained_relation_header)
         
         if model.two_stage_training and model.training_stage == 1:
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     
     # Evaluate FDE of interactive agents in validation set using constant velocity model
     elif args.mode == 'eval_constant_velocity':
-        model = FJMP(config)
+        model = GNN(config)
         m = sum(p.numel() for p in model.parameters())
         print_("Evaluating interactive agents on validation set with constant velocity model...")
         model._eval_constant_velocity(val_loader, config["max_epochs"])

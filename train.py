@@ -10,7 +10,7 @@ from modules import *
 from utils import *
 from dag_utils import *
 from metrics import *
-from fjmp import FJMP
+from gnn import GNN
 from get_dataloaders import get_dataloaders
 
 import horovod.torch as hvd 
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     train_loader, val_loader = get_dataloaders(args, config)
 
     # Running training code
-    model = FJMP(config)
+    model = GNN(config)
     m = sum(p.numel() for p in model.parameters())
     print_("Command line arguments:")
     for it in sys.argv:
@@ -131,7 +131,7 @@ if __name__ == '__main__':
         with open(os.path.join(config["log_path"], "config_stage_1.pkl"), "rb") as f:
             config_stage_1 = pickle.load(f) 
         
-        pretrained_relation_header = FJMP(config_stage_1)
+        pretrained_relation_header = GNN(config_stage_1)
         model.prepare_for_stage_2(pretrained_relation_header)
     
     # initialize optimizer

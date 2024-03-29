@@ -173,49 +173,6 @@ class FJMPFeatureEncoder(nn.Module):
 
         return graph
 
-class FJMPRelationHeader(nn.Module):
-    def __init__(self, config):
-        super(FJMPRelationHeader, self).__init__()
-        self.config = config
-        
-        self.agenttype_enc = Linear(2 * self.config["num_agenttypes"], self.config["h_dim"])
-        self.dist = Linear(2, self.config["h_dim"])
-        # convert src/dst features to edge features
-        self.f_1e = MLP(self.config['h_dim'] * 4, self.config['h_dim'])
-
-        self.h_1e_out = nn.Sequential(
-                LinearRes(self.config['h_dim'], self.config['h_dim']),
-                nn.Linear(self.config['h_dim'], self.config["num_edge_types"]),
-            )
-        
-        self.init_weights()
-
-    def init_weights(self):
-        for m in self.modules():
-            if isinstance(m, nn.Linear):
-                nn.init.xavier_normal_(m.weight.data)
-                if m.bias is not None: nn.init.constant_(m.bias, 0.1)
-    
-    def message_func1(self, edges):
-        agenttype_enc = self.agenttype_enc(torch.cat([edges.src['agenttypes'], edges.dst['agenttypes']], dim=-1))
-        dist = self.dist(edges.dst['ctrs'] - edges.src['ctrs'])
-        h_1e = self.f_1e(torch.cat([edges.src['xt_enc'], edges.dst['xt_enc'], dist, agenttype_enc], dim=-1))
-        
-        edges.data['h_1e'] = h_1e
-        return {'h_1e': h_1e}
-    
-    def node_to_edge(self, graph):
-        # propagate edge features back to nodes
-        graph.apply_edges(self.message_func1)
-
-        return graph
-
-    def forward(self, graph):
-        graph = self.node_to_edge(graph)
-        h_1e_out = self.h_1e_out(graph.edata["h_1e"])
-        
-        return h_1e_out
-
 # Proposal decoder
 class FJMPTrajectoryProposalDecoder(nn.Module):
     def __init__(self, config):

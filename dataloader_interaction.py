@@ -11,8 +11,8 @@ from pandas import read_csv
 from tqdm import tqdm
 import math
 import matplotlib.pyplot as plt
-from fjmp_utils import *
-from fjmp_metrics import *
+from utils import *
+from metrics import *
 import lanelet2
 from lanelet2.projection import UtmProjector
 from av2.geometry.interpolate import compute_midpoint_line
