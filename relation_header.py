@@ -146,7 +146,7 @@ class FJMPHeaderEncoderTrainer(nn.Module):
                     val_edge_acc_best = edge_acc  
                 
                     print_("Saving relation header")
-                    self.save_relation_header(epoch, optimizer, val_edge_acc_best)    
+                    self.save_models(epoch, optimizer, val_edge_acc_best)    
                     print_("Best validation edge accuracy: {:.4f}".format(val_edge_acc_best))     
 
     def _eval(self, val_loader, epoch):
