@@ -73,6 +73,7 @@ class GTLayer(nn.Module):
 class GTBackbone(nn.Module):
     def __init__(
         self,
+        config,
         hidden_size=128,
         pos_enc_size=2,
         num_layers=8,

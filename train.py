@@ -10,7 +10,7 @@ from modules import *
 from utils import *
 from dag_utils import *
 from metrics import *
-from gnn import GNN
+from fjmp_gnn import GNN
 from get_dataloaders import get_dataloaders
 
 import horovod.torch as hvd 
