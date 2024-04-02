@@ -368,3 +368,263 @@ Epoch 99 validation-set results:  val acc: 0.976	val acc 0: 0.983	val acc 1: 0.8
 Training data:  0.00% lr=4.000e-05 loss:161.227
 Training data:  54.05% lr=4.000e-05 loss:192.988
 Epoch 100 validation-set results:  val acc: 0.976	val acc 0: 0.982	val acc 1: 0.817	val acc 2: 0.861
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+2 {'mode': 'train', 'dataset': 'interaction', 'config_name': 'test', 'num_edge_types': 3, 'h_dim': 128, 'num_joint_modes': 6, 'num_proposals': 15, 'max_epochs': 50, 'log_path': PosixPath('logs/test'), 'lr': 0.001, 'decoder': 'dagnn', 'num_heads': 1, 'learned_relation_header': False, 'n_mapnet_layers': 2, 'n_l2a_layers': 2, 'n_a2a_layers': 2, 'resume_training': False, 'proposal_coef': 1, 'rel_coef': 100, 'proposal_header': False, 'two_stage_training': False, 'training_stage': 1, 'ig': 'sparse', 'focal_loss': False, 'gamma': 5, 'weight_0': 1.0, 'weight_1': 2.0, 'weight_2': 4.0, 'teacher_forcing': False, 'scheduled_sampling': False, 'eval_training': False, 'supervise_vehicles': False, 'no_agenttype_encoder': False, 'train_all': False, 'model_path': '/home/sacardoz/FJMP/logs/test/best_models.pt', 'num_train_samples': 47584, 'num_val_samples': 11794, 'switch_lr_1': 40, 'switch_lr_2': 48, 'lr_step': 0.2, 'input_size': 5, 'prediction_steps': 30, 'observation_steps': 10, 'num_agenttypes': 2, 'dataset_path': 'dataset_INTERACTION', 'tracks_train_reformatted': 'dataset_INTERACTION/train_reformatted', 'tracks_val_reformatted': 'dataset_INTERACTION/val_reformatted', 'num_scales': 4, 'map2actor_dist': 20.0, 'actor2actor_dist': 100.0, 'maps': 'dataset_INTERACTION/maps', 'cross_dist': 10, 'cross_angle': 3.141592653589793, 'preprocess': True, 'val_workers': 0, 'workers': 0, 'preprocess_train': 'dataset_INTERACTION/preprocess/train_interaction', 'preprocess_val': 'dataset_INTERACTION/preprocess/val_interaction', 'batch_size': 16}
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+torch.Size([1, 128])
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+torch.Size([181, 128])
+torch.Size([1, 128])
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+torch.Size([181, 128])
+torch.Size([181, 128])
+torch.Size([1, 128])
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+torch.Size([181, 128])
+torch.Size([181, 128])
+torch.Size([181, 128])
+torch.Size([1, 128])
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+tensor([181], device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+tensor([14, 11, 16, 11,  2, 16,  7,  4, 10, 10, 20, 10, 19, 16,  8,  7],
+       device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+tensor([14, 11, 16, 11,  2, 16,  7,  4, 10, 10, 20, 10, 19, 16,  8,  7],
+       device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+tensor([14, 11, 16, 11,  2, 16,  7,  4, 10, 10, 20, 10, 19, 16,  8,  7],
+       device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+tensor([181], device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+tensor([14, 11, 16, 11,  2, 16,  7,  4, 10, 10, 20, 10, 19, 16,  8,  7],
+       device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+tensor([14, 11, 16, 11,  2, 16,  7,  4, 10, 10, 20, 10, 19, 16,  8,  7],
+       device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+tensor([181], device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+tensor([181], device='cuda:0')
+tensor([181], device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+181
+tensor([14, 11, 16, 11,  2, 16,  7,  4, 10, 10, 20, 10, 19, 16,  8,  7],
+       device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+2
+torch.Size([1134, 2])
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+[torch.Size([1134]), torch.Size([1134])]
+torch.Size([1134, 2])
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+torch.Size([1134, 3])
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+torch.Size([1134, 3])
+torch.Size([1134, 3])
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+<bound method DGLGraph.batch_num_nodes of Graph(num_nodes=181, num_edges=1134,
+      ndata_schemes={'ctrs': Scheme(shape=(2,), dtype=torch.float32), 'rot': Scheme(shape=(2, 2), dtype=torch.float32), 'orig': Scheme(shape=(2,), dtype=torch.float32), 'agenttypes': Scheme(shape=(2,), dtype=torch.float32), 'ground_truth_futures': Scheme(shape=(30, 2), dtype=torch.float32), 'has_preds': Scheme(shape=(30,), dtype=torch.float32), 'xt_enc': Scheme(shape=(128,), dtype=torch.float32)}
+      edata_schemes={'edge_logits': Scheme(shape=(3,), dtype=torch.float32)})>
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+<bound method DGLGraph.batch_num_nodes of Graph(num_nodes=181, num_edges=1134,
+      ndata_schemes={'ctrs': Scheme(shape=(2,), dtype=torch.float32), 'rot': Scheme(shape=(2, 2), dtype=torch.float32), 'orig': Scheme(shape=(2,), dtype=torch.float32), 'agenttypes': Scheme(shape=(2,), dtype=torch.float32), 'ground_truth_futures': Scheme(shape=(30, 2), dtype=torch.float32), 'has_preds': Scheme(shape=(30,), dtype=torch.float32), 'xt_enc': Scheme(shape=(128,), dtype=torch.float32)}
+      edata_schemes={'edge_logits': Scheme(shape=(3,), dtype=torch.float32)})>
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+tensor([14, 11, 16, 11,  2, 16,  7,  4, 10, 10, 20, 10, 19, 16,  8,  7],
+       device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+tensor([14, 11, 16, 11,  2, 16,  7,  4, 10, 10, 20, 10, 19, 16,  8,  7],
+       device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+torch.Size([1134, 3])
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+tensor([  1,   2,   5,  10,  16,  17,  22,  27,  38,  44,  47,  58,  59,  60,
+         62,  82,  85,  92, 101, 102, 103, 104, 105, 106, 109, 115, 132, 132,
+        133, 134, 135, 136, 136, 138, 138, 139, 140, 142, 143, 144, 145, 145,
+        146, 146, 147, 154, 156, 174, 176, 178, 179], device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+torch.Size([1134, 3])
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+tensor([181], device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+tensor([14, 11, 16, 11,  2, 16,  7,  4, 10, 10, 20, 10, 19, 16,  8,  7],
+       device='cuda:0')
+tensor([181], device='cuda:0')
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:427.468
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:427.468
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+181
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:427.468
+161
+139
+134
+164
+184
+174
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911739 parameters
+Training model...
+Loaded preprocessed training data.
+Loaded preprocessed validation data.
+Model: 2911355 parameters
+Training model...
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:426.570
+Training data:  3.36% lr=1.000e-03 rel_coef=100.0 loss:84.057
+Training data:  6.72% lr=1.000e-03 rel_coef=100.0 loss:78.176
+Training data:  10.09% lr=1.000e-03 rel_coef=100.0 loss:77.208

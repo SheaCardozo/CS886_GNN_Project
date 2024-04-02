@@ -19,6 +19,34 @@ class GNNPipeline(nn.Module):
         self.config = config
         self.model_path = config["model_path"]
         self.observation_steps = config["observation_steps"]
+        self.config = config
+        self.dataset = config["dataset"]
+        self.num_train_samples = config["num_train_samples"]
+        self.num_val_samples = config["num_val_samples"]
+        self.num_agenttypes = config["num_agenttypes"]
+        self.switch_lr_1 = config["switch_lr_1"]
+        self.switch_lr_2 = config["switch_lr_2"]
+        self.lr_step = config["lr_step"]
+        self.mode = config["mode"]
+        self.input_size = config["input_size"]
+        self.observation_steps = config["observation_steps"]
+        self.prediction_steps = config["prediction_steps"]
+        self.num_edge_types = config["num_edge_types"]
+        self.h_dim = config["h_dim"]
+        self.num_joint_modes = config["num_joint_modes"]
+        self.num_proposals = config["num_proposals"]
+        self.learning_rate = config["lr"]
+        self.max_epochs = config["max_epochs"]
+        self.log_path = config["log_path"]
+        self.batch_size = config["batch_size"]
+        self.decoder = config["decoder"]
+        self.num_heads = config["num_heads"]
+        self.learned_relation_header = config["learned_relation_header"]
+        self.resume_training = config["resume_training"]
+        self.proposal_coef = config["proposal_coef"]
+        self.rel_coef = config["rel_coef"]
+        self.proposal_header = config["proposal_header"]
+        self.supervise_vehicles = config["supervise_vehicles"]
 
         self.build()
 
@@ -26,9 +54,11 @@ class GNNPipeline(nn.Module):
 
         model_dict = torch.load(self.model_path, map_location=dev)
 
-        self.relation_feature_encoder = FJMPFeatureEncoder(self.config).to(dev).load_state_dict(model_dict['feature_state_dict'])
+        self.relation_feature_encoder = FJMPFeatureEncoder(self.config).to(dev)
+        self.relation_feature_encoder.load_state_dict(model_dict['feature_state_dict'])
         #self.relation_aux_prop_decoder = FJMPTrajectoryProposalDecoder(self.config).to(dev).load_state_dict(model_dict['proposal_state_dict'])
-        self.relation_header = FJMPRelationHeader(self.config).to(dev).load_state_dict(model_dict['relation_state_dict'])
+        self.relation_header = FJMPRelationHeader(self.config).to(dev)
+        self.relation_header.load_state_dict(model_dict['relation_state_dict'])
 
         for param in self.relation_feature_encoder.parameters():
             param.requires_grad = False
@@ -61,7 +91,6 @@ class GNNPipeline(nn.Module):
     def forward(self, dd, training=False):
 
         dgl_graph = self.init_dgl_graph(dd['batch_idxs'], dd['ctrs'], dd['orig'], dd['rot'], dd['agenttypes'], dd['world_locs'], dd['has_preds']).to(dev)
-        
         edge_logits = self.get_graph_logits(dgl_graph, dd['feats'][:,:self.observation_steps], dd['agenttypes'], dd['actor_idcs'], dd['actor_ctrs'], dd['lane_graph']) 
         dgl_graph.edata["edge_logits"] = edge_logits
 
@@ -73,12 +102,16 @@ class GNNPipeline(nn.Module):
         eids_remove = all_edges[torch.where(all_edges[:, 0] > all_edges[:, 1])[0], 2]
         dgl_graph.remove_edges(eids_remove)
 
-
         edge_logits = dgl_graph.edata.pop("edge_logits")
+
         edge_probs = my_softmax(edge_logits, -1)
 
         dgl_graph.edata["edge_probs"] = edge_probs
-        dgl_graph = build_graph(dgl_graph, self.config)
+
+        new_graph = build_graph(dgl_graph, self.config)
+        new_graph.set_batch_num_nodes(dgl_graph.batch_num_nodes())
+        new_graph.set_batch_num_edges(dgl_graph.batch_num_edges())
+        dgl_graph = new_graph
 
         dgl_graph, aux_proposals = self.aux_prop_decoder(dgl_graph, dd['actor_ctrs'])
 
@@ -151,11 +184,10 @@ class GNNPipeline(nn.Module):
             for i, data in enumerate(train_loader):     
                 dd = process_data(data, self.config)
 
-                gmm_params, aux_proposals, dgl_graph = self.forward(data, training=True) 
-
-                loss_dict = self.get_loss(dgl_graph, dd['batch_idxs'], gmm_params, aux_proposals, dd['agenttypes'], dd['has_preds'], dd['gt_locs'], dd['batch_size'])
+                gmm_params, aux_proposals, dgl_graph = self.forward(dd, training=True) 
+    
+                loss = self.get_loss(dgl_graph, dd['batch_idxs'], gmm_params, aux_proposals, dd['agenttypes'], dd['has_preds'], dd['gt_locs'], dd['batch_size'])
                 
-                loss = loss_dict["total_loss"]
                 optimizer.zero_grad()
                 loss.backward()
                 accum_gradients = accumulate_gradients(accum_gradients, self.named_parameters())
@@ -163,7 +195,7 @@ class GNNPipeline(nn.Module):
                 
                 if i % 100 == 0:
                     print_("Training data: ", "{:.2f}%".format(i * 100 / tot_log), "lr={:.3e}".format(cur_lr), "rel_coef={:.1f}".format(self.rel_coef),
-                        "\t".join([k + ":" + f"{v.item():.3f}" for k, v in loss_dict.items()]))
+                        "\t".join([k + ":" + f"{v.item():.3f}" for k, v in {"loss": loss}.items()]))
 
             self.eval()
             val_eval_results = self._eval(val_loader, epoch)
@@ -336,7 +368,7 @@ class GNNPipeline(nn.Module):
                 count += batch_num_nodes_i
 
             # sanity check
-            assert batch_size == (i + 1)
+            assert batch_size == (i + 1), (batch_size, i+1)
 
             loss_prop_reg = torch.min(b_s, dim=1)[0].mean()        
 

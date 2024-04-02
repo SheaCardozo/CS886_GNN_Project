@@ -19,12 +19,12 @@ import horovod.torch as hvd
 parser = argparse.ArgumentParser()
 parser.add_argument("--mode", choices=['train'], help='running mode : (train)', default="train")
 parser.add_argument("--dataset", choices=['interaction', 'argoverse2'], help='dataset : (interaction, argoverse2)', default="interaction")
-parser.add_argument("--config_name", default="dev", help="a name to indicate the log path and model save path")
+parser.add_argument("--config_name", default="test", help="a name to indicate the log path and model save path")
 parser.add_argument("--num_edge_types", default=3, type=int, help='3 types: no-interaction, a-influences-b, b-influences-a')
 parser.add_argument("--h_dim", default=128, type=int, help='dimension for the hidden layers of MLPs. Note that the GRU always has h_dim=256')
 parser.add_argument("--num_joint_modes", default=6, type=int, help='number of scene-level modes')
 parser.add_argument("--num_proposals", default=15, type=int, help='number of proposal modes')
-parser.add_argument("--batch_size", default=16, type=int)
+parser.add_argument("--batch_size", default=64, type=int)
 parser.add_argument("--max_epochs", default=50, type=int, help='maximum number of epochs')
 parser.add_argument("--lr", default=1e-3, type=float, help="initial learning rate")
 parser.add_argument("--decoder", choices=['dagnn', 'lanegcn'], help='decoder architecture : (dagnn, lanegcn)', default="dagnn")
@@ -52,6 +52,7 @@ parser.add_argument("--eval_training", action="store_true", help="run evaluation
 parser.add_argument("--supervise_vehicles", action="store_true", help="supervise only vehicles in loss function (for INTERACTION)?")
 parser.add_argument("--train_all", action="store_true", help="train on both the train and validation sets?")
 parser.add_argument("--no_agenttype_encoder", action="store_true", help="encode agent type in FJMP encoder? Only done for Argoverse 2 as INTERACTION only predicts vehicle trajectories.")
+parser.add_argument("--model_path", default="/home/sacardoz/FJMP/logs/test/best_models.pt", type=str, help='Path to Stage 1 Models')
 
 args = parser.parse_args()
 
@@ -128,4 +129,4 @@ if __name__ == '__main__':
     starting_epoch = 1 
     val_best, ade_best, fde_best, val_edge_acc_best = np.inf, np.inf, np.inf, 0.
 
-    model._train(train_loader, val_loader, optimizer, starting_epoch, val_best, ade_best, fde_best, val_edge_acc_best)
+    model._train(train_loader, val_loader, optimizer, starting_epoch, val_best, ade_best, fde_best)

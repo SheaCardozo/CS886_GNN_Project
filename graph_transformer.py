@@ -71,14 +71,16 @@ class GTLayer(nn.Module):
 class GTBackbone(nn.Module):
     def __init__(
         self,
+        config,
         hidden_size=128,
         pos_enc_size=2,
         num_layers=2,
         num_heads=8,
     ):
         super().__init__()
+        self.config = config
         self.pos_enc_size = pos_enc_size
-        self.pos_linear = nn.Linear(self.pos_enc_size, hidden_size)
+        #self.pos_linear = nn.Linear(self.pos_enc_size, hidden_size)
         self.layers = nn.ModuleList(
             [GTLayer(hidden_size, num_heads) for _ in range(num_layers)]
         )
@@ -86,16 +88,18 @@ class GTBackbone(nn.Module):
 
     def forward(self, g):
         indices = torch.stack(g.edges())
-        pos_enc = dgl.laplacian_pe(g, k=self.pos_enc_size, padding=True)
 
         X = g.ndata['xt_enc']
+
         N = g.num_nodes()
+
         A = dglsp.spmatrix(indices, shape=(N, N))
-        h = X + self.pos_linear(pos_enc)
+        #pos_enc = dgl.lap_pe(g, k=self.pos_enc_size, padding=True).to(X.device)
+
+        h = X# + self.pos_linear(pos_enc)
         for layer in self.layers:
             h = layer(A, h)
-        h = self.pooler(g, h)
 
-        g.ndata['xt_enc'] = g
+        g.ndata['xt_enc'] = h
 
-        return h
+        return g
