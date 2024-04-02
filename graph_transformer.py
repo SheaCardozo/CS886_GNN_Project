@@ -8,8 +8,6 @@ import torch.optim as optim
 
 from dgl.data import AsGraphPredDataset
 from dgl.dataloading import GraphDataLoader
-from ogb.graphproppred import collate_dgl, DglGraphPropPredDataset, Evaluator
-from ogb.graphproppred.mol_encoder import AtomEncoder
 from tqdm import tqdm
 
 
@@ -73,27 +71,31 @@ class GTLayer(nn.Module):
 class GTBackbone(nn.Module):
     def __init__(
         self,
-        config,
         hidden_size=128,
         pos_enc_size=2,
-        num_layers=8,
+        num_layers=2,
         num_heads=8,
     ):
         super().__init__()
-        self.atom_encoder = AtomEncoder(hidden_size)
-        self.pos_linear = nn.Linear(pos_enc_size, hidden_size)
+        self.pos_enc_size = pos_enc_size
+        self.pos_linear = nn.Linear(self.pos_enc_size, hidden_size)
         self.layers = nn.ModuleList(
             [GTLayer(hidden_size, num_heads) for _ in range(num_layers)]
         )
         self.pooler = dglnn.SumPooling()
 
-    def forward(self, g, X, pos_enc):
+    def forward(self, g):
         indices = torch.stack(g.edges())
+        pos_enc = dgl.laplacian_pe(g, k=self.pos_enc_size, padding=True)
+
+        X = g.ndata['xt_enc']
         N = g.num_nodes()
         A = dglsp.spmatrix(indices, shape=(N, N))
-        h = self.atom_encoder(X) + self.pos_linear(pos_enc)
+        h = X + self.pos_linear(pos_enc)
         for layer in self.layers:
             h = layer(A, h)
         h = self.pooler(g, h)
+
+        g.ndata['xt_enc'] = g
 
         return h

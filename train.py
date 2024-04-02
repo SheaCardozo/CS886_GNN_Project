@@ -6,6 +6,7 @@ import argparse
 import os, sys
 from pathlib import Path
 
+from gnn import GNNPipeline
 from modules import *
 from utils import *
 from dag_utils import *
@@ -102,6 +103,7 @@ if __name__ == '__main__':
     config["supervise_vehicles"] = args.supervise_vehicles
     config["no_agenttype_encoder"] = args.no_agenttype_encoder 
     config["train_all"] = args.train_all
+    config["model_path"] = args.model_path
 
     config["log_path"].mkdir(exist_ok=True, parents=True)
     log = os.path.join(config["log_path"], "log")
@@ -111,29 +113,12 @@ if __name__ == '__main__':
     train_loader, val_loader = get_dataloaders(args, config)
 
     # Running training code
-    model = GNN(config)
+    model = GNNPipeline(config)
     m = sum(p.numel() for p in model.parameters())
-    print_("Command line arguments:")
-    for it in sys.argv:
-        print_(it)
-    
+
     print_("Model: {} parameters".format(m))
     print_("Training model...")
 
-    # save stage 1 config
-    if model.two_stage_training and model.training_stage == 1:
-        if hvd.rank() == 0:
-            with open(os.path.join(config["log_path"], "config_stage_1.pkl"), "wb") as f:
-                pickle.dump(config, f)
-
-    # load model for stage 1 and freeze weights
-    if model.two_stage_training and model.training_stage == 2:
-        with open(os.path.join(config["log_path"], "config_stage_1.pkl"), "rb") as f:
-            config_stage_1 = pickle.load(f) 
-        
-        pretrained_relation_header = GNN(config_stage_1)
-        model.prepare_for_stage_2(pretrained_relation_header)
-    
     # initialize optimizer
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=model.learning_rate)
     optimizer = hvd.DistributedOptimizer(
@@ -142,12 +127,5 @@ if __name__ == '__main__':
     
     starting_epoch = 1 
     val_best, ade_best, fde_best, val_edge_acc_best = np.inf, np.inf, np.inf, 0.
-    # resume training from checkpoint
-    if config["resume_training"]:
-        if (not model.two_stage_training) or (model.two_stage_training and model.training_stage == 2):
-            optimizer, starting_epoch, val_best, ade_best, fde_best = model.load_for_train(optimizer)
-        else:
-            optimizer, starting_epoch, val_edge_acc_best = model.load_for_train_stage_1(optimizer)
 
-    # train model
     model._train(train_loader, val_loader, optimizer, starting_epoch, val_best, ade_best, fde_best, val_edge_acc_best)
