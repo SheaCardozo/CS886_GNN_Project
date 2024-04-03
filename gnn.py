@@ -8,6 +8,7 @@ from lanegcn_modules import *
 from modules import *
 from mpi4py import MPI
 import time 
+from gmm import GMMDecoder
 
 comm = MPI.COMM_WORLD
 dev = 'cuda:{}'.format(0)
@@ -68,8 +69,8 @@ class GNNPipeline(nn.Module):
 
         self.feature_encoder = FJMPFeatureEncoder(self.config).to(dev)
         self.aux_prop_decoder = FJMPTrajectoryProposalDecoder(self.config).to(dev)
-        self.gnn_backbone = GTBackbone(self.config).to(dev)
-        self.gmm_decoder = LaneGCNHeader(self.config).to(dev)#GMMDecoder(self.config).to(dev)
+        #self.gnn_backbone = GTBackbone(self.config).to(dev)
+        self.gmm_decoder = GMMDecoder(self.config).to(dev)  #LaneGCNHeader(self.config).to(dev)#GMMDecoder(self.config).to(dev) 
 
 
     def get_graph_logits(self, graph, x, agenttypes, actor_idcs, actor_ctrs, lane_graph):
@@ -109,7 +110,7 @@ class GNNPipeline(nn.Module):
         dgl_graph.edata["edge_probs"] = edge_probs
 
         new_graphs = [build_graph(gs, self.config) for gs in dgl.unbatch(dgl_graph)]
-        pos_enc = [dgl.random_walk_pe(gs, k=self.gnn_backbone.pos_enc_size).to(dev) for gs in new_graphs]
+        pos_enc = [dgl.random_walk_pe(gs, k=2).to(dev) for gs in new_graphs]
         pos_enc = torch.cat(pos_enc, 0)
 
         dgl_graph = dgl.batch(new_graphs)
@@ -117,7 +118,7 @@ class GNNPipeline(nn.Module):
 
         dgl_graph, aux_proposals = self.aux_prop_decoder(dgl_graph, dd['actor_ctrs'])
 
-        dgl_graph = self.gnn_backbone(dgl_graph)
+        #dgl_graph = self.gnn_backbone(dgl_graph)
 
         gmm_params = self.gmm_decoder(dgl_graph)
 
