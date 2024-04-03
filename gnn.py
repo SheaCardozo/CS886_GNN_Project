@@ -56,7 +56,7 @@ class GNNPipeline(nn.Module):
 
         self.relation_feature_encoder = FJMPFeatureEncoder(self.config).to(dev)
         self.relation_feature_encoder.load_state_dict(model_dict['feature_state_dict'])
-        #self.relation_aux_prop_decoder = FJMPTrajectoryProposalDecoder(self.config).to(dev).load_state_dict(model_dict['proposal_state_dict'])
+
         self.relation_header = FJMPRelationHeader(self.config).to(dev)
         self.relation_header.load_state_dict(model_dict['relation_state_dict'])
 
@@ -108,10 +108,12 @@ class GNNPipeline(nn.Module):
 
         dgl_graph.edata["edge_probs"] = edge_probs
 
-        new_graph = build_graph(dgl_graph, self.config)
-        new_graph.set_batch_num_nodes(dgl_graph.batch_num_nodes())
-        new_graph.set_batch_num_edges(dgl_graph.batch_num_edges())
-        dgl_graph = new_graph
+        new_graphs = [build_graph(gs, self.config) for gs in dgl.unbatch(dgl_graph)]
+        pos_enc = [dgl.random_walk_pe(gs, k=self.gnn_backbone.pos_enc_size).to(dev) for gs in new_graphs]
+        pos_enc = torch.cat(pos_enc, 0)
+
+        dgl_graph = dgl.batch(new_graphs)
+        dgl_graph.ndata["pos_enc"] = pos_enc
 
         dgl_graph, aux_proposals = self.aux_prop_decoder(dgl_graph, dd['actor_ctrs'])
 
@@ -243,19 +245,19 @@ class GNNPipeline(nn.Module):
 
                 dd = process_data(data, self.config)
             
-                gmm_params = self.forward(data) 
+                gmm_params = self.forward(dd) 
 
                 loc_preds.append(gmm_params.detach().cpu())
                 gt_locs_all.append(dd['gt_locs'].detach().cpu())
                 has_last_all.append(dd['has_last'].detach().cpu())
                 has_preds_all.append(dd['has_preds'].detach().cpu())
                 batch_idxs_all.append(dd['batch_idxs'].detach().cpu() + tot)
+                agenttypes_all.append(dd['agenttypes'].detach().cpu())
 
                 tot += dd['batch_size']
 
             loc_preds = np.concatenate(loc_preds, axis=0)
             gt_locs_all = np.concatenate(gt_locs_all, axis=0)
-            agenttypes_all = np.concatenate(agenttypes_all, axis=0)
             has_preds_all = np.concatenate(has_preds_all, axis=0)
             batch_idxs_all = np.concatenate(batch_idxs_all)
             has_last_mask = np.concatenate(has_last_all, axis=0).astype(bool)
@@ -307,7 +309,8 @@ class GNNPipeline(nn.Module):
   
         data = {
             "FDE": FDE,
-            "ADE": ADE}
+            "ADE": ADE,
+            "n_scenarios": n_scenarios}
 
         data_list = comm.allgather(data)
 
