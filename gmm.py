@@ -3,17 +3,18 @@ import torch
 import dgl
 
 class GMMDecoder(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, num_modes):
         super(GMMDecoder, self).__init__()
         self.config = config
+        self.num_modes = num_modes
         self._future_len = self.config["prediction_steps"]
-        self.multi_modal_query_embedding = nn.Embedding(self.config["num_joint_modes"], 128)
+        self.multi_modal_query_embedding = nn.Embedding(num_modes, 128)
         self.gaussian = nn.Sequential(nn.Linear(self.config["h_dim"], 2 * self.config['h_dim']), nn.ELU(), nn.Linear(2 * self.config['h_dim'], self._future_len*4))
-        self.register_buffer('modal', torch.arange(self.config["num_joint_modes"]).long())
+        self.register_buffer('modal', torch.arange(num_modes).long())
 
     def forward(self, graph):
 
-        graph_embeddings = [gs.ndata['xt_enc'].unsqueeze(1).tile((1, self.config["num_joint_modes"], 1)) for gs in dgl.unbatch(graph)]
+        graph_embeddings = [gs.ndata['xt_enc'].unsqueeze(1).tile((1, self.num_modes, 1)) for gs in dgl.unbatch(graph)]
         multi_modal_query = self.multi_modal_query_embedding(self.modal).unsqueeze(0)
 
         graph_embeddings = [graph_embeddings[i] + multi_modal_query.tile((graph_embeddings[i].shape[0], 1, 1)) for i in range(len(graph_embeddings))]

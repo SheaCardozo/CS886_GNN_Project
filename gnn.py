@@ -68,10 +68,24 @@ class GNNPipeline(nn.Module):
             param.requires_grad = False
 
         self.feature_encoder = FJMPFeatureEncoder(self.config).to(dev)
-        self.aux_prop_decoder = GMMDecoder(self.config).to(dev)
+        self.aux_prop_decoder = GMMDecoder(self.config, self.num_proposals).to(dev)
         #self.gnn_backbone = GTBackbone(self.config).to(dev)
-        self.gmm_decoder = GMMDecoder(self.config).to(dev)  #LaneGCNHeader(self.config).to(dev)#GMMDecoder(self.config).to(dev) 
+        self.gmm_decoder = GMMDecoder(self.config, self.num_joint_modes).to(dev)  #LaneGCNHeader(self.config).to(dev)#GMMDecoder(self.config).to(dev) 
 
+        m = sum(p.numel() for p in self.relation_feature_encoder.parameters())
+        print_("Relation feature encoder: {} parameters".format(m))
+
+        m = sum(p.numel() for p in self.relation_header.parameters())
+        print_("Relation header: {} parameters".format(m))
+
+        m = sum(p.numel() for p in self.feature_encoder.parameters())
+        print_("Feature encoder: {} parameters".format(m))
+
+        m = sum(p.numel() for p in self.aux_prop_decoder.parameters())
+        print_("Auxiliary proposal decoder: {} parameters".format(m))
+
+        m = sum(p.numel() for p in self.gmm_decoder.parameters())
+        print_("GMM decoder: {} parameters".format(m))
 
     def get_graph_logits(self, graph, x, agenttypes, actor_idcs, actor_ctrs, lane_graph):
         all_edges = [x.unsqueeze(1) for x in graph.edges('uv')]
@@ -357,7 +371,7 @@ class GNNPipeline(nn.Module):
             loc_pred, proposals = gmm_params, prop_gmm_params
             #proposal loss
             has_preds_mask = has_preds.unsqueeze(-1).unsqueeze(-1)
-            has_preds_mask = has_preds_mask.expand(has_preds_mask.shape[0], has_preds_mask.shape[1], self.num_joint_modes, 1).bool().squeeze().to(dev)
+            has_preds_mask = has_preds_mask.expand(has_preds_mask.shape[0], has_preds_mask.shape[1], self.num_proposals, 1).bool().squeeze().to(dev)
             
             if self.supervise_vehicles and self.dataset=='interaction':
                 # only compute loss on vehicle trajectories
@@ -372,14 +386,14 @@ class GNNPipeline(nn.Module):
             gt_locs = gt_locs[vehicle_mask]
             batch_idxs = batch_idxs[vehicle_mask]
 
-            target = torch.stack([gt_locs] * self.num_joint_modes, dim=2).to(dev)
+            target = torch.stack([gt_locs] * self.num_proposals, dim=2).to(dev)
 
             # Regression loss
             loss_prop_reg = self.imitation_loss(proposals, target)
 
             loss_prop_reg = loss_prop_reg * has_preds_mask
 
-            b_s = torch.zeros((batch_size, self.num_joint_modes)).to(loss_prop_reg.device)
+            b_s = torch.zeros((batch_size, self.num_proposals)).to(loss_prop_reg.device)
             count = 0
             for i, batch_num_nodes_i in enumerate(graph.batch_num_nodes()):
                 batch_num_nodes_i = batch_num_nodes_i.item()
