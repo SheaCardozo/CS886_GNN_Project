@@ -117,16 +117,16 @@ class GNNPipeline(nn.Module):
         dgl_graph.ndata["pos_enc"] = pos_enc
 
         if training:
-            prop_gmm_params, prop_score = self.aux_prop_decoder(dgl_graph)
+            prop_gmm_params = self.aux_prop_decoder(dgl_graph)
 
         #dgl_graph = self.gnn_backbone(dgl_graph)
 
-        gmm_params, score = self.gmm_decoder(dgl_graph)
+        gmm_params = self.gmm_decoder(dgl_graph)
 
         if training:
-            return gmm_params, score, prop_gmm_params, prop_score, dgl_graph
+            return gmm_params, prop_gmm_params, dgl_graph
 
-        return gmm_params, score
+        return gmm_params
 
     def init_dgl_graph(self, batch_idxs, ctrs, orig, rot, agenttypes, world_locs, has_preds):        
         n_scenarios = len(np.unique(batch_idxs))
@@ -188,9 +188,9 @@ class GNNPipeline(nn.Module):
             for i, data in enumerate(train_loader):     
                 dd = process_data(data, self.config)
 
-                gmm_params, score, prop_gmm_params, prop_score, dgl_graph = self.forward(dd, training=True) 
+                gmm_params, prop_gmm_params, dgl_graph = self.forward(dd, training=True) 
     
-                loss = self.get_loss(dgl_graph, dd['batch_idxs'], gmm_params, score, prop_gmm_params, prop_score, dd['agenttypes'], dd['has_preds'], dd['gt_locs'], dd['batch_size'])
+                loss = self.get_loss(dgl_graph, dd['batch_idxs'], gmm_params, prop_gmm_params, dd['agenttypes'], dd['has_preds'], dd['gt_locs'], dd['batch_size'])
                 
                 optimizer.zero_grad()
                 loss.backward()
@@ -247,7 +247,7 @@ class GNNPipeline(nn.Module):
 
                 dd = process_data(data, self.config)
             
-                gmm_params, score = self.forward(dd) 
+                gmm_params = self.forward(dd) 
                 gmm_params = gmm_params[..., :2]
 
                 loc_preds.append(gmm_params.detach().cpu())
@@ -336,9 +336,28 @@ class GNNPipeline(nn.Module):
 
         return results
     
-    def get_loss(self, graph, batch_idxs, gmm_params, score, prop_gmm_params, prop_score, agenttypes, has_preds, gt_locs, batch_size):
+    def imitation_loss(self, gmm, ground_truth):
+        mu = gmm[..., :2]
+        dx = ground_truth[..., 0] - mu[..., 0]
+        dy = ground_truth[..., 1] - mu[..., 1]
+
+        cov = gmm[..., 2:]
+        log_std_x = torch.clamp(cov[..., 0], -2, 2)
+        log_std_y = torch.clamp(cov[..., 1], -2, 2)
+        std_x = torch.exp(log_std_x)
+        std_y = torch.exp(log_std_y)
+
+        gmm_loss = log_std_x + log_std_y + 0.5 * (torch.square(dx/std_x) + torch.square(dy/std_y)) + torch.ones_like(log_std_x) * 4
+
+        return gmm_loss
+
+    
+    def get_loss(self, graph, batch_idxs, gmm_params, prop_gmm_params, agenttypes, has_preds, gt_locs, batch_size):
+
+            loc_pred, proposals = gmm_params, prop_gmm_params
             #proposal loss
-            has_preds_mask = has_preds.unsqueeze(-1).unsqueeze(-1).to(dev)
+            has_preds_mask = has_preds.unsqueeze(-1).unsqueeze(-1)
+            has_preds_mask = has_preds_mask.expand(has_preds_mask.shape[0], has_preds_mask.shape[1], self.num_joint_modes, 1).bool().squeeze().to(dev)
             
             if self.supervise_vehicles and self.dataset=='interaction':
                 # only compute loss on vehicle trajectories
@@ -349,46 +368,64 @@ class GNNPipeline(nn.Module):
             
             vehicle_mask = vehicle_mask.cpu()
             has_preds_mask = has_preds_mask[vehicle_mask]
-            prop_gmm_params = prop_gmm_params[vehicle_mask]
-            prop_score = prop_score[vehicle_mask]
+            proposals = proposals[vehicle_mask]
             gt_locs = gt_locs[vehicle_mask]
             batch_idxs = batch_idxs[vehicle_mask]
 
-            prop_gmm_loss, prop_score_loss = self.imitation_loss(prop_gmm_params, prop_score, gt_locs.to(dev))
+            target = torch.stack([gt_locs] * self.num_joint_modes, dim=2).to(dev)
 
             # Regression loss
-            loss_prop_reg = (prop_gmm_loss * has_preds_mask).mean() + prop_score_loss
+            loss_prop_reg = self.imitation_loss(proposals, target)
 
-            # regression loss                                                
-            gmm_loss, score_loss = self.imitation_loss(gmm_params, score, gt_locs.to(dev))
+            loss_prop_reg = loss_prop_reg * has_preds_mask
+
+            b_s = torch.zeros((batch_size, self.num_joint_modes)).to(loss_prop_reg.device)
+            count = 0
+            for i, batch_num_nodes_i in enumerate(graph.batch_num_nodes()):
+                batch_num_nodes_i = batch_num_nodes_i.item()
+                
+                batch_loss_prop_reg = loss_prop_reg[count:count+batch_num_nodes_i]    
+                # divide by number of agents in the scene        
+                b_s[i] = torch.sum(batch_loss_prop_reg, (0, 1)) / batch_num_nodes_i
+
+                count += batch_num_nodes_i
+
+            # sanity check
+            assert batch_size == (i + 1), (batch_size, i+1)
+
+            loss_prop_reg, best_modes = torch.min(b_s, dim=1)   
+            loss_prop_reg = loss_prop_reg.mean()     
+
+            # regression loss
+            has_preds_mask = has_preds.unsqueeze(-1).unsqueeze(-1)
+            has_preds_mask = has_preds_mask.expand(has_preds_mask.shape[0], has_preds_mask.shape[1], self.num_joint_modes, 1).bool().squeeze().to(dev)
+                        
+            has_preds_mask = has_preds_mask[vehicle_mask]
+            loc_pred = loc_pred[vehicle_mask]
+            
+            target = torch.stack([gt_locs] * self.num_joint_modes, dim=2).to(dev)
+
+            # Regression loss
+            reg_loss = self.imitation_loss(loc_pred, target)
 
             # 0 out loss for the indices that don't have a ground-truth prediction.
-            loss_reg = (gmm_loss * has_preds_mask).mean() + score_loss
+            reg_loss = reg_loss * has_preds_mask
+
+            b_s = torch.zeros((batch_size, self.num_joint_modes)).to(reg_loss.device)
+            count = 0
+            for i, batch_num_nodes_i in enumerate(graph.batch_num_nodes()):
+                batch_num_nodes_i = batch_num_nodes_i.item()
+                
+                batch_reg_loss = reg_loss[count:count+batch_num_nodes_i]    
+                # divide by number of agents in the scene        
+                b_s[i] = torch.sum(batch_reg_loss, (0, 1)) / batch_num_nodes_i
+
+                count += batch_num_nodes_i
+
+            # sanity check
+            assert batch_size == (i + 1)
+
+            loss_reg = torch.min(b_s, dim=1)[0].mean()      
 
             loss = loss_reg + loss_prop_reg * self.proposal_coef
-
             return loss
-    
-    def imitation_loss(self, gmm, scores, ground_truth):
-
-        mu = gmm[..., :2]
-        ground_truth = ground_truth[..., None, :]
-        dx = ground_truth[..., 0] - mu[..., 0]
-        dy = ground_truth[..., 1] - mu[..., 1]
-
-        cov = gmm[..., 2:]
-        log_std_x = torch.clamp(cov[..., 0], -2, 2)
-        log_std_y = torch.clamp(cov[..., 1], -2, 2)
-        std_x = torch.exp(log_std_x)
-        std_y = torch.exp(log_std_y)
-
-
-        gmm_loss = log_std_x + log_std_y + 0.5 * (torch.square(dx/std_x) + torch.square(dy/std_y))
-        gmm_loss = gmm_loss.mean(1)
-
-        best_mode = torch.argmin(gmm_loss, dim=-1)
-        score_loss = F.cross_entropy(scores, best_mode, label_smoothing=0.2)
-
-        gmm_loss = torch.min(gmm_loss, dim=-1).values
-        
-        return gmm_loss, score_loss

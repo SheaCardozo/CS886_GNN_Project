@@ -8,8 +8,7 @@ class GMMDecoder(nn.Module):
         self.config = config
         self._future_len = self.config["prediction_steps"]
         self.multi_modal_query_embedding = nn.Embedding(self.config["num_joint_modes"], 128)
-        self.gaussian = nn.Sequential(nn.Linear(128, 256), nn.ELU(), nn.Dropout(0.1), nn.Linear(256, self._future_len*4))
-        self.score = nn.Sequential(nn.Linear(128, 64), nn.ELU(), nn.Dropout(0.1), nn.Linear(64, 1))
+        self.gaussian = nn.Sequential(nn.Linear(self.config["h_dim"], 2 * self.config['h_dim']), nn.ELU(), nn.Linear(2 * self.config['h_dim'], self._future_len*4))
         self.register_buffer('modal', torch.arange(self.config["num_joint_modes"]).long())
 
     def forward(self, graph):
@@ -19,8 +18,6 @@ class GMMDecoder(nn.Module):
 
         graph_embeddings = [graph_embeddings[i] + multi_modal_query.tile((graph_embeddings[i].shape[0], 1, 1)) for i in range(len(graph_embeddings))]
         graph_embeddings = torch.cat(graph_embeddings, dim=0)
-
-        score = self.score(graph_embeddings).squeeze(-1)
 
         B, M, _ = graph_embeddings.shape
 
@@ -37,5 +34,5 @@ class GMMDecoder(nn.Module):
 
         res = res.permute(0, 2, 1, 3)
 
-        return res, score
+        return res
 
