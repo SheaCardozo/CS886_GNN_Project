@@ -1,10 +1,112 @@
 Loaded preprocessed training data.
 Loaded preprocessed validation data.
+Loaded preprocessed training data.
+Loaded preprocessed training data.Loaded preprocessed training data.
+
+Loaded preprocessed validation data.
+Loaded preprocessed validation data.
+Loaded preprocessed validation data.
 Relation feature encoder: 1195136 parameters
 Relation header: 134659 parameters
 Feature encoder: 1195136 parameters
-Auxiliary proposal decoder: 65784 parameters
-GMM decoder: 64632 parameters
-Model: 2655347 parameters
+Auxiliary proposal decoder: 67704 parameters
+GMM decoder: 66552 parameters
+GNN backbone: 265344 parameters
+Model: 2924531 parameters
 Training model...
-Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:3945.205
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:4979.093
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:414.827
+Epoch 1 validation-set results:  FDE: 10.096	ADE: 4.394
+Validation FDE+ADE improved. Saving model. 
+Best loss: 14.4900 Best ADE: 4.394 Best FDE: 10.096
+Epoch 1 time: 182.484s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:336.868
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:240.371
+Epoch 2 validation-set results:  FDE: 4.685	ADE: 1.915
+Validation FDE+ADE improved. Saving model. 
+Best loss: 6.5999 Best ADE: 1.915 Best FDE: 4.685
+Epoch 2 time: 185.612s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:243.586
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:207.555
+Epoch 3 validation-set results:  FDE: 3.518	ADE: 1.335
+Validation FDE+ADE improved. Saving model. 
+Best loss: 4.8529 Best ADE: 1.335 Best FDE: 3.518
+Epoch 3 time: 184.686s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:206.878
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:199.087
+Epoch 4 validation-set results:  FDE: 3.045	ADE: 1.167
+Validation FDE+ADE improved. Saving model. 
+Best loss: 4.2117 Best ADE: 1.167 Best FDE: 3.045
+Epoch 4 time: 185.302s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:198.000
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:169.607
+Epoch 5 validation-set results:  FDE: 2.474	ADE: 0.892
+Validation FDE+ADE improved. Saving model. 
+Best loss: 3.3660 Best ADE: 0.892 Best FDE: 2.474
+Epoch 5 time: 185.840s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:201.854
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:174.438
+Epoch 6 validation-set results:  FDE: 2.243	ADE: 0.794
+Validation FDE+ADE improved. Saving model. 
+Best loss: 3.0372 Best ADE: 0.794 Best FDE: 2.243
+Epoch 6 time: 184.926s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:157.277
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:158.627
+Epoch 7 validation-set results:  FDE: 2.001	ADE: 0.688
+Validation FDE+ADE improved. Saving model. 
+Best loss: 2.6887 Best ADE: 0.688 Best FDE: 2.001
+Epoch 7 time: 185.716s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:144.903
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:148.225
+Epoch 8 validation-set results:  FDE: 1.949	ADE: 0.707
+Validation FDE+ADE improved. Saving model. 
+Best loss: 2.6561 Best ADE: 0.707 Best FDE: 1.949
+Epoch 8 time: 185.344s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:155.748
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:148.484
+Epoch 9 validation-set results:  FDE: 1.745	ADE: 0.648
+Validation FDE+ADE improved. Saving model. 
+Best loss: 2.3929 Best ADE: 0.648 Best FDE: 1.745
+Epoch 9 time: 185.490s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:142.117
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:152.094
+Epoch 10 validation-set results:  FDE: 1.663	ADE: 0.586
+Validation FDE+ADE improved. Saving model. 
+Best loss: 2.2480 Best ADE: 0.586 Best FDE: 1.663
+Epoch 10 time: 185.637s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:137.536
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:139.960
+Epoch 11 validation-set results:  FDE: 1.752	ADE: 0.605
+Best loss: 2.2480 Best ADE: 0.586 Best FDE: 1.663
+Epoch 11 time: 185.667s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:143.981
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:124.936
+Epoch 12 validation-set results:  FDE: 1.588	ADE: 0.553
+Validation FDE+ADE improved. Saving model. 
+Best loss: 2.1409 Best ADE: 0.553 Best FDE: 1.588
+Epoch 12 time: 185.680s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:128.705
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:133.966
+Epoch 13 validation-set results:  FDE: 1.539	ADE: 0.534
+Validation FDE+ADE improved. Saving model. 
+Best loss: 2.0730 Best ADE: 0.534 Best FDE: 1.539
+Epoch 13 time: 185.525s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:128.005
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:126.291
+Epoch 14 validation-set results:  FDE: 1.462	ADE: 0.486
+Validation FDE+ADE improved. Saving model. 
+Best loss: 1.9477 Best ADE: 0.486 Best FDE: 1.462
+Epoch 14 time: 185.699s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:117.024
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:129.841
+Epoch 15 validation-set results:  FDE: 1.525	ADE: 0.566
+Best loss: 1.9477 Best ADE: 0.486 Best FDE: 1.462
+Epoch 15 time: 185.724s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:129.510
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:120.449
+Epoch 16 validation-set results:  FDE: 1.363	ADE: 0.448
+Validation FDE+ADE improved. Saving model. 
+Best loss: 1.8110 Best ADE: 0.448 Best FDE: 1.363
+Epoch 16 time: 186.317s
+Training data:  0.00% lr=1.000e-03 rel_coef=100.0 loss:115.442
+Training data:  54.05% lr=1.000e-03 rel_coef=100.0 loss:113.726

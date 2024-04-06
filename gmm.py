@@ -2,14 +2,16 @@ import torch.nn as nn
 import torch
 import dgl
 
+from modules import LinearRes
+
 class GMMDecoder(nn.Module):
     def __init__(self, config, num_modes):
         super(GMMDecoder, self).__init__()
         self.config = config
         self.num_modes = num_modes
         self._future_len = self.config["prediction_steps"]
-        self.multi_modal_query_embedding = nn.Embedding(num_modes, 128)
-        self.gaussian = nn.Sequential(nn.Linear(self.config["h_dim"], 2 * self.config['h_dim']), nn.ELU(), nn.Linear(2 * self.config['h_dim'], self._future_len*4))
+        self.multi_modal_query_embedding = nn.Embedding(num_modes, self.config['h_dim'])
+        self.gaussian = nn.Sequential(LinearRes(self.config['h_dim'], self.config['h_dim']), nn.Linear(self.config['h_dim'], self._future_len*4))
         self.register_buffer('modal', torch.arange(num_modes).long())
 
     def forward(self, graph):
@@ -22,7 +24,13 @@ class GMMDecoder(nn.Module):
 
         B, M, _ = graph_embeddings.shape
 
-        res = self.gaussian(graph_embeddings).view(B, M, self._future_len, 4) # mu_x, mu_y, log_sig_x, log_sig_y
+
+        res = []
+        for i in range(self.num_modes):
+            res.append(self.gaussian(graph_embeddings[:, i, :]))
+
+        res = torch.stack(res, dim=1)
+        res = res.view(B, M, self._future_len, 4) # mu_x, mu_y, log_sig_x, log_sig_y
 
         pred_loc = res[..., :2] + graph.ndata["ctrs"].view(-1, 1, 1, 2)
         pred_loc = torch.matmul(pred_loc, graph.ndata["rot"].unsqueeze(1)) + graph.ndata["orig"].view(-1, 1, 1, 2)

@@ -68,8 +68,8 @@ class GNNPipeline(nn.Module):
             param.requires_grad = False
 
         self.feature_encoder = FJMPFeatureEncoder(self.config).to(dev)
-        self.aux_prop_decoder = GMMDecoder(self.config, self.num_proposals).to(dev)
-        #self.gnn_backbone = GTBackbone(self.config).to(dev)
+        self.aux_prop_decoder = GMMDecoder(self.config, self.num_proposals).to(dev) 
+        self.gnn_backbone = GTBackbone(self.config).to(dev)
         self.gmm_decoder = GMMDecoder(self.config, self.num_joint_modes).to(dev)  #LaneGCNHeader(self.config).to(dev)#GMMDecoder(self.config).to(dev) 
 
         m = sum(p.numel() for p in self.relation_feature_encoder.parameters())
@@ -86,6 +86,9 @@ class GNNPipeline(nn.Module):
 
         m = sum(p.numel() for p in self.gmm_decoder.parameters())
         print_("GMM decoder: {} parameters".format(m))
+
+        m = sum(p.numel() for p in self.gnn_backbone.parameters())
+        print_("GNN backbone: {} parameters".format(m))
 
     def get_graph_logits(self, graph, x, agenttypes, actor_idcs, actor_ctrs, lane_graph):
         all_edges = [x.unsqueeze(1) for x in graph.edges('uv')]
@@ -133,7 +136,7 @@ class GNNPipeline(nn.Module):
         if training:
             prop_gmm_params = self.aux_prop_decoder(dgl_graph)
 
-        #dgl_graph = self.gnn_backbone(dgl_graph)
+        dgl_graph = self.gnn_backbone(dgl_graph)
 
         gmm_params = self.gmm_decoder(dgl_graph)
 
