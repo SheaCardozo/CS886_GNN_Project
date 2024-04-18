@@ -28,8 +28,8 @@ parser.add_argument("--lr", default=1e-3, type=float, help="initial learning rat
 parser.add_argument("--focal_loss", action="store_true", help="use multiclass focal loss for relation header?")
 parser.add_argument("--gamma", default=5, type=float, help="gamma parameter for focal loss.")
 parser.add_argument("--weight_0", default=1., type=float, help="weight of class 0 for relation header.")
-parser.add_argument("--weight_1", default=2., type=float, help="weight of class 1 for relation header.")
-parser.add_argument("--weight_2", default=2., type=float, help="weight of class 2 for relation header.")
+parser.add_argument("--weight_1", default=4., type=float, help="weight of class 1 for relation header.")
+parser.add_argument("--weight_2", default=4., type=float, help="weight of class 2 for relation header.")
 parser.add_argument("--train_all", action="store_true", help="train on both the train and validation sets?")
 parser.add_argument("--no_agenttype_encoder", action="store_true", help="encode agent type in FJMP encoder? Only done for Argoverse 2 as INTERACTION only predicts vehicle trajectories.")
 parser.add_argument("--n_mapnet_layers", default=2, type=int, help='number of MapNet blocks')
@@ -128,9 +128,9 @@ if __name__ == '__main__':
 
     # initialize optimizer
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3)
-    lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95 ** 0.25)
+    #lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95 ** 0.25)
 
-    model, optimizer, lr_scheduler, train_loader, val_loader = accelerator.prepare(model, optimizer, lr_scheduler, train_loader, val_loader)
+    model, optimizer, train_loader, val_loader = accelerator.prepare(model, optimizer, train_loader, val_loader)
 
     val_edge_acc_best = 0.
 
@@ -155,9 +155,9 @@ if __name__ == '__main__':
         epoch_loss = accelerator.gather(epoch_loss)
             
         if accelerator.is_main_process:
-            print(f"Training Epoch: {epoch}, lr={lr_scheduler.get_last_lr()}, epoch_loss={epoch_loss.mean().item()}")
+            print(f"Training Epoch: {epoch}, epoch_loss={epoch_loss.mean().item()}")
         
-        lr_scheduler.step()
+        #lr_scheduler.step()
 
         edge_acc, ea0, ea1, ea2 = val(model, config, val_loader)
 
