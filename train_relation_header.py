@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 
-import pickle
 import argparse
 import os, sys
 from pathlib import Path
@@ -26,12 +25,11 @@ parser.add_argument("--ig", choices=['sparse', 'dense', 'm2i'], help='which inte
 parser.add_argument("--batch_size", default=64, type=int)
 parser.add_argument("--max_epochs", default=50, type=int, help='maximum number of epochs')
 parser.add_argument("--lr", default=1e-3, type=float, help="initial learning rate")
-parser.add_argument("--gpu_start", default=0, type=int, help='gpu device i, where training will occupy gpu device i,i+1,...,i+n_gpus-1')
 parser.add_argument("--focal_loss", action="store_true", help="use multiclass focal loss for relation header?")
 parser.add_argument("--gamma", default=5, type=float, help="gamma parameter for focal loss.")
 parser.add_argument("--weight_0", default=1., type=float, help="weight of class 0 for relation header.")
 parser.add_argument("--weight_1", default=2., type=float, help="weight of class 1 for relation header.")
-parser.add_argument("--weight_2", default=4., type=float, help="weight of class 2 for relation header.")
+parser.add_argument("--weight_2", default=2., type=float, help="weight of class 2 for relation header.")
 parser.add_argument("--train_all", action="store_true", help="train on both the train and validation sets?")
 parser.add_argument("--no_agenttype_encoder", action="store_true", help="encode agent type in FJMP encoder? Only done for Argoverse 2 as INTERACTION only predicts vehicle trajectories.")
 parser.add_argument("--n_mapnet_layers", default=2, type=int, help='number of MapNet blocks')
@@ -42,8 +40,6 @@ parser.add_argument("--rel_coef", default=100, type=float, help="coefficient for
 parser.add_argument("--supervise_vehicles", action="store_true", help="supervise only vehicles in loss function (for INTERACTION)?")
 
 args = parser.parse_args()
-
-GPU_START = args.gpu_start
 
 def val(model, config, val_loader):
 
@@ -132,7 +128,7 @@ if __name__ == '__main__':
 
     # initialize optimizer
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3)
-    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=5)
+    lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95 ** 0.25)
 
     model, optimizer, lr_scheduler, train_loader, val_loader = accelerator.prepare(model, optimizer, lr_scheduler, train_loader, val_loader)
 
@@ -159,11 +155,12 @@ if __name__ == '__main__':
         epoch_loss = accelerator.gather(epoch_loss)
             
         if accelerator.is_main_process:
-            print(f"Training Epoch: {epoch}, lr={optimizer.param_groups[0]['lr']}, epoch_loss={epoch_loss.mean().item()}")
-                
+            print(f"Training Epoch: {epoch}, lr={lr_scheduler.get_last_lr()}, epoch_loss={epoch_loss.mean().item()}")
+        
+        lr_scheduler.step()
+
         edge_acc, ea0, ea1, ea2 = val(model, config, val_loader)
 
-        lr_scheduler.step(metrics=edge_acc)
 
         if accelerator.is_main_process:
 

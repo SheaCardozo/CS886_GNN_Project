@@ -1,10 +1,17 @@
 Loaded preprocessed training data.
 Loaded preprocessed validation data.
 Loaded preprocessed training data.
-Loaded preprocessed validation data.
 Loaded preprocessed training data.
+Loaded preprocessed validation data.
 Loaded preprocessed validation data.
 Loaded preprocessed training data.
 Loaded preprocessed validation data.
 Model: 1391679 parameters
 Training model...
+Training Epoch: 0, lr=[0.001], epoch_loss=1949416.25
+Epoch 0 validation-set results:  val acc: 0.960	val acc 0: 0.999	val acc 1: 0.006	val acc 2: 0.114
+Validation Edge Accuracy improved.
+Saving relation header
+Best validation edge accuracy: 0.9600
+Training Epoch: 1, lr=[0.0009500000000000001], epoch_loss=663734.875
+Epoch 1 validation-set results:  val acc: 0.959	val acc 0: 0.995	val acc 1: 0.051	val acc 2: 0.248

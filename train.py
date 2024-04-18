@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 
-import pickle
 import argparse
 import os, sys
 from pathlib import Path
@@ -11,8 +10,11 @@ from modules import *
 from utils import *
 from dag_utils import *
 from metrics import *
-from fjmp_gnn import GNN
 from get_dataloaders import get_dataloaders
+
+import tqdm
+
+from accelerate import Accelerator, DistributedDataParallelKwargs
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--mode", choices=['train'], help='running mode : (train)', default="train")
@@ -39,32 +41,108 @@ parser.add_argument("--proposal_header", action="store_true", help="add proposal
 parser.add_argument("--two_stage_training", action="store_true", help="train relation predictor first?")
 parser.add_argument("--training_stage", default=1, type=int, help='1 or 2. Which training stage in 2 stage training?')
 parser.add_argument("--ig", choices=['sparse', 'dense', 'm2i'], help='which interaction graph pseudolabels to use', default="sparse")
-parser.add_argument("--focal_loss", action="store_true", help="use multiclass focal loss for relation header?")
-parser.add_argument("--gamma", default=5, type=float, help="gamma parameter for focal loss.")
-parser.add_argument("--weight_0", default=1., type=float, help="weight of class 0 for relation header.")
-parser.add_argument("--weight_1", default=2., type=float, help="weight of class 1 for relation header.")
-parser.add_argument("--weight_2", default=4., type=float, help="weight of class 2 for relation header.")
 parser.add_argument("--teacher_forcing", action="store_true", help="use teacher forcing of influencer future predictions?")
 parser.add_argument("--scheduled_sampling", action="store_true", help="use linear schedule curriculum for teacher forcing of influencer future predictions?")
 parser.add_argument("--eval_training", action="store_true", help="run evaluation on training set?")
 parser.add_argument("--supervise_vehicles", action="store_true", help="supervise only vehicles in loss function (for INTERACTION)?")
 parser.add_argument("--train_all", action="store_true", help="train on both the train and validation sets?")
 parser.add_argument("--no_agenttype_encoder", action="store_true", help="encode agent type in FJMP encoder? Only done for Argoverse 2 as INTERACTION only predicts vehicle trajectories.")
-parser.add_argument("--model_path", default="/home/sacardoz/FJMP/logs/test/best_models.pt", type=str, help='Path to Stage 1 Models')
+parser.add_argument("--model_path", default="/home/sacardoz/FJMP/logs/dev/best_models.pt", type=str, help='Path to Stage 1 Models')
 
 args = parser.parse_args()
 
-GPU_START = args.gpu_start
+def val(model, config, val_loader):
 
+    model.eval()
 
-hvd.init()
-os.environ['CUDA_VISIBLE_DEVICES'] = str(hvd.local_rank() + GPU_START)
-dev = 'cuda:{}'.format(0)
-torch.cuda.set_device(0)
+    loc_preds, gt_locs_all, agenttypes_all, has_last_all, has_preds_all, batch_idxs_all = [], [], [], [], [], []
 
-seed = hvd.rank()
-set_seeds(seed)
+    tot = 0
+    with torch.no_grad():
+        for data in tqdm.tqdm(val_loader, total=len(val_loader), desc=f"Validation"):
+            dd = process_data(data, config)
 
+            gmm_params = model(dd, train=False) 
+            gmm_params = gmm_params[..., :2]
+
+            loc_preds.append(gmm_params.detach().cpu())
+            gt_locs_all.append(dd['gt_locs'].detach().cpu())
+            has_last_all.append(dd['has_last'].detach().cpu())
+            has_preds_all.append(dd['has_preds'].detach().cpu())
+            batch_idxs_all.append(dd['batch_idxs'].detach().cpu() + tot)
+            agenttypes_all.append(dd['agenttypes'].detach().cpu())
+
+            tot += dd['batch_size']
+
+    loc_preds = np.concatenate(loc_preds, axis=0)
+    gt_locs_all = np.concatenate(gt_locs_all, axis=0)
+    has_preds_all = np.concatenate(has_preds_all, axis=0)
+    batch_idxs_all = np.concatenate(batch_idxs_all)
+    has_last_mask = np.concatenate(has_last_all, axis=0).astype(bool)
+    eval_agent_mask = np.concatenate(agenttypes_all, axis=0)[:, 1].astype(bool)
+
+    mask = has_last_mask * eval_agent_mask
+
+    gt_locs_masked = gt_locs_all[mask]
+    has_preds_masked = has_preds_all[mask].astype(bool)
+    batch_idxs_masked = batch_idxs_all[mask]
+    loc_preds_masked = loc_preds[mask]
+
+    n_scenarios = np.unique(batch_idxs_masked).shape[0]
+    scenarios = np.unique(batch_idxs_masked).astype(int)
+
+    has_preds_all_mask = np.reshape(has_preds_masked, has_preds_masked.shape + (1,))
+    has_preds_all_mask = np.broadcast_to(has_preds_all_mask, has_preds_masked.shape[:2] + (config["num_joint_modes"],))  
+
+    num_joint_modes = loc_preds_masked.shape[2]
+    gt_locs_masked = np.stack([gt_locs_masked]*num_joint_modes, axis=2)
+
+    mse_error = (loc_preds_masked - gt_locs_masked)**2
+
+    euclidean_rmse = np.sqrt(mse_error.sum(-1))   
+    
+    euclidean_rmse_filtered = np.zeros(euclidean_rmse.shape)
+    euclidean_rmse_filtered[has_preds_all_mask] = euclidean_rmse[has_preds_all_mask]
+
+    # mean over the agents then min over the num_joint_modes samples then mean over the scenarios
+    mean_FDE = np.zeros((n_scenarios, num_joint_modes))
+    mean_ADE = np.zeros((n_scenarios, num_joint_modes))
+    
+    for j, i in enumerate(scenarios):
+        i = int(i)
+        has_preds_all_i = has_preds_masked[batch_idxs_masked == i]
+        euclidean_rmse_filtered_i = euclidean_rmse_filtered[batch_idxs_masked == i]
+        mean_FDE[j] = euclidean_rmse_filtered_i[:, -1].mean(0)
+        mean_ADE[j] = euclidean_rmse_filtered_i.sum((0, 1)) / has_preds_all_i.sum()
+
+    FDE = mean_FDE.min(1).mean()
+    ADE = mean_ADE.min(1).mean()
+
+    data_list = {
+        "FDE": accelerator.gather(FDE),
+        "ADE": accelerator.gather(ADE),
+        "n_scenarios": accelerator.gather(n_scenarios)}
+
+    FDE = 0
+    ADE = 0
+    n_scenarios = 0
+
+    for iade, ifde, iscens in zip(data_list["ADE"], data_list["FDE"], data_list["n_scenarios"]):
+        FDE += ifde * iscens
+        ADE += iade * iscens
+        n_scenarios += iscens
+
+    FDE /= n_scenarios
+    ADE /= n_scenarios
+
+    results = {
+        'FDE': FDE,
+        'ADE': ADE,
+    }
+
+    model.train()
+
+    return results
 
 if __name__ == '__main__':
     config = {}
@@ -105,6 +183,10 @@ if __name__ == '__main__':
     config["model_path"] = args.model_path
 
     config["log_path"].mkdir(exist_ok=True, parents=True)
+
+    ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
+    accelerator = Accelerator(kwargs_handlers=[ddp_kwargs])
+
     log = os.path.join(config["log_path"], "log")
     # write stdout to log file
     sys.stdout = Logger(log)
@@ -112,16 +194,57 @@ if __name__ == '__main__':
     train_loader, val_loader = get_dataloaders(args, config)
 
     # Running training code
-    model = GNNPipeline(config)
-    m = sum(p.numel() for p in model.parameters())
+    model = GNNPipeline(config, device=accelerator.device)
 
-    print_("Model: {} parameters".format(m))
-    print_("Training model...")
+    if accelerator.is_main_process:
+        m = sum(p.numel() for p in model.parameters())
+        
+        print("Model: {} parameters".format(m))
+        print("Training model...")
 
     # initialize optimizer
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=model.learning_rate)
-    
-    starting_epoch = 1 
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3)
+    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=5, threshold=0.0001, threshold_mode='rel')
+
+    model, optimizer, lr_scheduler, train_loader, val_loader = accelerator.prepare(model, optimizer, lr_scheduler, train_loader, val_loader)
+
     val_best, ade_best, fde_best, val_edge_acc_best = np.inf, np.inf, np.inf, 0.
 
-    model._train(train_loader, val_loader, optimizer, starting_epoch, val_best, ade_best, fde_best)
+    for epoch in range(config["max_epochs"]):
+        epoch_loss = torch.Tensor([0]).to(accelerator.device)
+            
+        model.train()
+
+        for i, data in tqdm.tqdm(enumerate(train_loader), total=len(train_loader), desc=f"Epoch {epoch}"):
+            optimizer.zero_grad()
+
+            dd = process_data(data, config)
+
+            with accelerator.autocast():
+                loss = model(dd, train=True)
+                epoch_loss += loss
+
+                accelerator.backward(loss)
+
+            optimizer.step()
+
+        epoch_loss = accelerator.gather(epoch_loss)
+            
+        if accelerator.is_main_process:
+            print(f"Training Epoch: {epoch}, lr={optimizer.param_groups[0]['lr']}, epoch_loss={epoch_loss.mean().item()}")
+                
+        val_eval_results = val(model, config, val_loader)
+
+        if accelerator.is_main_process:
+            lr_scheduler.step(metrics=(val_eval_results["FDE"] + val_eval_results["ADE"]) / 2)
+            print("Epoch {} validation-set results: ".format(epoch), "\t".join([f"{k}: {v}" if type(v) is np.ndarray else f"{k}: {v:.3f}" for k, v in val_eval_results.items()]))
+
+            if (val_eval_results["FDE"] + val_eval_results["ADE"]) < val_best:
+                val_best = val_eval_results["FDE"] + val_eval_results["ADE"]
+                ade_best = val_eval_results["ADE"]
+                fde_best = val_eval_results["FDE"]
+
+                print("Validation FDE+ADE improved. Saving model. ")
+
+                accelerator.unwrap_model(model).save_models(epoch, val_edge_acc_best)    
+                print("Best loss: {:.4f}".format(val_best), "Best ADE: {:.3f}".format(ade_best), "Best FDE: {:.3f}".format(fde_best))
