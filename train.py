@@ -14,8 +14,6 @@ from metrics import *
 from fjmp_gnn import GNN
 from get_dataloaders import get_dataloaders
 
-import horovod.torch as hvd 
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--mode", choices=['train'], help='running mode : (train)', default="train")
 parser.add_argument("--dataset", choices=['interaction', 'argoverse2'], help='dataset : (interaction, argoverse2)', default="interaction")
@@ -122,9 +120,6 @@ if __name__ == '__main__':
 
     # initialize optimizer
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=model.learning_rate)
-    optimizer = hvd.DistributedOptimizer(
-        optimizer, named_parameters=model.named_parameters()
-    ) 
     
     starting_epoch = 1 
     val_best, ade_best, fde_best, val_edge_acc_best = np.inf, np.inf, np.inf, 0.

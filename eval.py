@@ -13,8 +13,6 @@ from metrics import *
 from fjmp_gnn import GNN
 from get_dataloaders import get_dataloaders
 
-import horovod.torch as hvd 
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--mode", choices=['eval', 'eval_constant_velocity'], help='running mode : (eval, eval_constant_velocity)', default="eval")
 parser.add_argument("--dataset", choices=['interaction', 'argoverse2'], help='dataset : (interaction, argoverse2)', default="interaction")

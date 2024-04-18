@@ -13,7 +13,9 @@ from metrics import *
 from get_dataloaders import get_dataloaders
 from relation_header import FJMPHeaderEncoderTrainer
 
-import horovod.torch as hvd 
+import tqdm
+
+from accelerate import Accelerator, DistributedDataParallelKwargs
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--dataset", choices=['interaction', 'argoverse2'], help='dataset : (interaction, argoverse2)', default="interaction")
@@ -43,14 +45,40 @@ args = parser.parse_args()
 
 GPU_START = args.gpu_start
 
+def val(model, config, val_loader):
 
-hvd.init()
-os.environ['CUDA_VISIBLE_DEVICES'] = str(hvd.local_rank() + GPU_START)
-dev = 'cuda:{}'.format(0)
-torch.cuda.set_device(0)
+    model.eval()
 
-seed = hvd.rank()
-set_seeds(seed)
+    ig_preds = []
+    ig_labels_all = []            
+
+    with torch.no_grad():
+        for data in tqdm.tqdm(val_loader, total=len(val_loader), desc=f"Validation"):
+            dd = process_data(data, config)
+
+            relations_preds = model(dd, train=False)
+            edge_probs = my_softmax(relations_preds, -1)
+
+            ig_labels_all.append(dd["ig_labels"].detach().cpu())                                            
+            ig_preds.append(edge_probs.detach().cpu())
+
+    results_ig_preds = torch.concatenate(ig_preds, axis=0)
+    results_ig_labels_all = torch.concatenate(ig_labels_all, axis=0)    
+
+    ig_preds = torch.argmax(results_ig_preds, axis=1)
+    relation_accuracy = torch.mean(torch.where(ig_preds == results_ig_labels_all, 1., 0.)).to(model.device)
+
+    edge_mask_0 = results_ig_labels_all == 0
+    edge_mask_1 = results_ig_labels_all == 1
+    edge_mask_2 = results_ig_labels_all == 2
+
+    edge_accuracy_0 = torch.mean(torch.where(ig_preds[edge_mask_0] == 0, 1., 0.)).to(model.device)
+    edge_accuracy_1 = torch.mean(torch.where(ig_preds[edge_mask_1] == 1, 1., 0.)).to(model.device)
+    edge_accuracy_2 = torch.mean(torch.where(ig_preds[edge_mask_2] == 2, 1., 0.)).to(model.device)
+
+    model.train()
+
+    return accelerator.gather(relation_accuracy).mean().item(), accelerator.gather(edge_accuracy_0).mean().item(), accelerator.gather(edge_accuracy_1).mean().item(), accelerator.gather(edge_accuracy_2).mean().item()
 
 
 if __name__ == '__main__':
@@ -84,6 +112,9 @@ if __name__ == '__main__':
 
     config["supervise_vehicles"] = args.supervise_vehicles
 
+    ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
+    accelerator = Accelerator(kwargs_handlers=[ddp_kwargs])
+
     log = os.path.join(config["log_path"], "log")
     # write stdout to log file
     sys.stdout = Logger(log)
@@ -91,22 +122,58 @@ if __name__ == '__main__':
     train_loader, val_loader = get_dataloaders(args, config)
 
     # Running training code
-    model = FJMPHeaderEncoderTrainer(config).to(dev)
+    model = FJMPHeaderEncoderTrainer(config, device=accelerator.device)
 
-    m = sum(p.numel() for p in model.parameters())
-    print_("Command line arguments:")
-    for it in sys.argv:
-        print_(it)
-    
-    print_("Model: {} parameters".format(m))
-    print_("Training model...")
+    if accelerator.is_main_process:
+        m = sum(p.numel() for p in model.parameters())
+        
+        print("Model: {} parameters".format(m))
+        print("Training model...")
 
     # initialize optimizer
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=model.learning_rate)
-    optimizer = hvd.DistributedOptimizer(
-        optimizer, named_parameters=model.named_parameters()
-    ) 
-    
-    starting_epoch = 1 
-    # train model
-    model._train(train_loader, val_loader, optimizer, starting_epoch)
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3)
+    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=5)
+
+    model, optimizer, lr_scheduler, train_loader, val_loader = accelerator.prepare(model, optimizer, lr_scheduler, train_loader, val_loader)
+
+    val_edge_acc_best = 0.
+
+    for epoch in range(config["max_epochs"]):
+        epoch_loss = torch.Tensor([0]).to(accelerator.device)
+            
+        model.train()
+
+        for i, data in tqdm.tqdm(enumerate(train_loader), total=len(train_loader), desc=f"Epoch {epoch}"):
+            optimizer.zero_grad()
+
+            dd = process_data(data, config)
+
+            with accelerator.autocast():
+                loss = model(dd, train=True)
+                epoch_loss += loss
+
+                accelerator.backward(loss)
+
+            optimizer.step()
+
+        epoch_loss = accelerator.gather(epoch_loss)
+            
+        if accelerator.is_main_process:
+            print(f"Training Epoch: {epoch}, lr={optimizer.param_groups[0]['lr']}, epoch_loss={epoch_loss.mean().item()}")
+                
+        edge_acc, ea0, ea1, ea2 = val(model, config, val_loader)
+
+        lr_scheduler.step(metrics=edge_acc)
+
+        if accelerator.is_main_process:
+
+            val_dict = {"val acc": edge_acc, "val acc 0": ea0, "val acc 1": ea1, "val acc 2": ea2}
+            print("Epoch {} validation-set results: ".format(epoch), "\t".join([f"{k}: {v}" if type(v) is np.ndarray else f"{k}: {v:.3f}" for k, v in val_dict.items()]))
+
+            if edge_acc > val_edge_acc_best:
+                print("Validation Edge Accuracy improved.")  
+                val_edge_acc_best = edge_acc  
+            
+                print("Saving relation header")
+                accelerator.unwrap_model(model).save_models(epoch, val_edge_acc_best)    
+                print("Best validation edge accuracy: {:.4f}".format(val_edge_acc_best))     

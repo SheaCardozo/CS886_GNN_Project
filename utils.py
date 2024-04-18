@@ -3,7 +3,6 @@ import torch.nn.functional as F
 from torch import nn
 import numpy as np 
 import random
-import horovod.torch as hvd 
 import sys, math
 import matplotlib.pyplot as plt
 from scipy import sparse
@@ -283,16 +282,6 @@ def to_long(data):
     if torch.is_tensor(data) and data.dtype == torch.int16:
         data = data.long()
     return data
-
-def print_(*args):
-    if hvd.rank() == 0:
-        print(*args)
-
-def worker_init_fn(pid):
-    np_seed = hvd.rank() * 1024 + int(pid)
-    np.random.seed(np_seed)
-    random_seed = np.random.randint(2 ** 32 - 1)
-    random.seed(random_seed)
 
 ### FROM NRI
 def my_softmax(input, axis=1):

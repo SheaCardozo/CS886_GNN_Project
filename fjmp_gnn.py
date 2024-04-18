@@ -9,10 +9,6 @@ from dag_utils import *
 from metrics import *
 from relation_header import FJMPRelationHeader
 
-import horovod.torch as hvd 
-from mpi4py import MPI
-
-comm = MPI.COMM_WORLD
 dev = 'cuda:{}'.format(0)
 
 class GNN(torch.nn.Module):
