@@ -154,7 +154,7 @@ if __name__ == '__main__':
     config["h_dim"] = args.h_dim 
     config["num_joint_modes"] = args.num_joint_modes
     config["num_proposals"] = args.num_proposals
-    config["max_epochs"] = 100 
+    config["max_epochs"] = args.max_epochs 
     config["log_path"] = Path('./logs') / config["config_name"]
     config["lr"] = args.lr 
     config["decoder"] = args.decoder
@@ -200,7 +200,6 @@ if __name__ == '__main__':
 
     # initialize optimizer
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3)
-    #lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=5, threshold=0.0001, threshold_mode='rel')
 
     model, optimizer, train_loader, val_loader = accelerator.prepare(model, optimizer, train_loader, val_loader)
 
@@ -231,7 +230,6 @@ if __name__ == '__main__':
         val_eval_results = val(model, config, val_loader)
 
         if accelerator.is_main_process:
-            #lr_scheduler.step(metrics=(val_eval_results["FDE"] + val_eval_results["ADE"]) / 2)
             print("Epoch {} validation-set results: ".format(epoch), "\t".join([f"{k}: {v}" if type(v) is np.ndarray else f"{k}: {v:.3f}" for k, v in val_eval_results.items()]))
 
             if (val_eval_results["FDE"] + val_eval_results["ADE"]) < val_best:
