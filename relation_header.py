@@ -82,9 +82,8 @@ class FJMPHeaderEncoderTrainer(nn.Module):
             }
         torch.save(state, path)
 
-
     def init_dgl_graph(self, batch_idxs, ctrs, orig, rot, agenttypes, world_locs, has_preds):        
-        n_scenarios = len(torch.unique(batch_idxs))
+        n_scenarios = len(np.unique(batch_idxs.cpu()))
         graphs, labels = [], []
         for ii in range(n_scenarios):
             label = None
@@ -95,24 +94,22 @@ class FJMPHeaderEncoderTrainer(nn.Module):
 
             # start with a fully-connected graph
             if si > 1:
-                off_diag = torch.ones([si, si]) - torch.eye(si)
-                rel_src = torch.where(off_diag)[0]
-                rel_dst = torch.where(off_diag)[1]
+                off_diag = np.ones([si, si]) - np.eye(si)
+                rel_src = np.where(off_diag)[0]
+                rel_dst = np.where(off_diag)[1]
 
                 graph = dgl.graph((rel_src, rel_dst))
             else:
                 graph = dgl.graph(([], []), num_nodes=si)
 
-            graph = graph.to(self.device)
-
             # separate graph for each scenario
-            graph.ndata["ctrs"] = ctrs[batch_idxs == ii]
-            graph.ndata["rot"] = rot[batch_idxs == ii]
-            graph.ndata["orig"] = orig[batch_idxs == ii]
-            graph.ndata["agenttypes"] = agenttypes[batch_idxs == ii].float()
+            graph.ndata["ctrs"] = ctrs[batch_idxs == ii].cpu()
+            graph.ndata["rot"] = rot[batch_idxs == ii].cpu()
+            graph.ndata["orig"] = orig[batch_idxs == ii].cpu()
+            graph.ndata["agenttypes"] = agenttypes[batch_idxs == ii].float().cpu()
             # ground truth future in SE(2)-transformed coordinates
-            graph.ndata["ground_truth_futures"] = world_locs[batch_idxs == ii][:, self.observation_steps:]
-            graph.ndata["has_preds"] = has_preds[batch_idxs == ii].float()
+            graph.ndata["ground_truth_futures"] = world_locs[batch_idxs == ii][:, self.observation_steps:].cpu()
+            graph.ndata["has_preds"] = has_preds[batch_idxs == ii].float().cpu()
             
             graphs.append(graph)
             labels.append(label)

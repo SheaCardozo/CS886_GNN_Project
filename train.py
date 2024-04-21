@@ -24,7 +24,7 @@ parser.add_argument("--num_edge_types", default=3, type=int, help='3 types: no-i
 parser.add_argument("--h_dim", default=128, type=int, help='dimension for the hidden layers of MLPs. Note that the GRU always has h_dim=256')
 parser.add_argument("--num_joint_modes", default=6, type=int, help='number of scene-level modes')
 parser.add_argument("--num_proposals", default=15, type=int, help='number of proposal modes')
-parser.add_argument("--batch_size", default=64, type=int)
+parser.add_argument("--batch_size", default=32, type=int)
 parser.add_argument("--max_epochs", default=50, type=int, help='maximum number of epochs')
 parser.add_argument("--lr", default=1e-3, type=float, help="initial learning rate")
 parser.add_argument("--decoder", choices=['dagnn', 'lanegcn'], help='decoder architecture : (dagnn, lanegcn)', default="dagnn")
@@ -47,7 +47,7 @@ parser.add_argument("--eval_training", action="store_true", help="run evaluation
 parser.add_argument("--supervise_vehicles", action="store_true", help="supervise only vehicles in loss function (for INTERACTION)?")
 parser.add_argument("--train_all", action="store_true", help="train on both the train and validation sets?")
 parser.add_argument("--no_agenttype_encoder", action="store_true", help="encode agent type in FJMP encoder? Only done for Argoverse 2 as INTERACTION only predicts vehicle trajectories.")
-parser.add_argument("--model_path", default="/home/sacardoz/FJMP/logs/dev/best_models.pt", type=str, help='Path to Stage 1 Models')
+parser.add_argument("--model_path", default="/home/sacardoz/FJMP/logs/real/best_models.pt", type=str, help='Path to Stage 1 Models')
 
 args = parser.parse_args()
 
@@ -115,8 +115,9 @@ def val(model, config, val_loader):
         mean_FDE[j] = euclidean_rmse_filtered_i[:, -1].mean(0)
         mean_ADE[j] = euclidean_rmse_filtered_i.sum((0, 1)) / has_preds_all_i.sum()
 
-    FDE = mean_FDE.min(1).mean()
-    ADE = mean_ADE.min(1).mean()
+    FDE = torch.Tensor([mean_FDE.min(1).mean()]).to(accelerator.device)
+    ADE = torch.Tensor([mean_ADE.min(1).mean()]).to(accelerator.device)
+    n_scenarios = torch.Tensor([n_scenarios]).to(accelerator.device)
 
     data_list = {
         "FDE": accelerator.gather(FDE),
@@ -153,7 +154,7 @@ if __name__ == '__main__':
     config["h_dim"] = args.h_dim 
     config["num_joint_modes"] = args.num_joint_modes
     config["num_proposals"] = args.num_proposals
-    config["max_epochs"] = args.max_epochs 
+    config["max_epochs"] = 100 
     config["log_path"] = Path('./logs') / config["config_name"]
     config["lr"] = args.lr 
     config["decoder"] = args.decoder
@@ -169,11 +170,6 @@ if __name__ == '__main__':
     config["two_stage_training"] = args.two_stage_training
     config["training_stage"] = args.training_stage
     config["ig"] = args.ig
-    config["focal_loss"] = args.focal_loss 
-    config["gamma"] = args.gamma
-    config["weight_0"] = args.weight_0
-    config["weight_1"] = args.weight_1
-    config["weight_2"] = args.weight_2
     config["teacher_forcing"] = args.teacher_forcing
     config["scheduled_sampling"] = args.scheduled_sampling 
     config["eval_training"] = args.eval_training
@@ -204,9 +200,9 @@ if __name__ == '__main__':
 
     # initialize optimizer
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3)
-    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=5, threshold=0.0001, threshold_mode='rel')
+    #lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=5, threshold=0.0001, threshold_mode='rel')
 
-    model, optimizer, lr_scheduler, train_loader, val_loader = accelerator.prepare(model, optimizer, lr_scheduler, train_loader, val_loader)
+    model, optimizer, train_loader, val_loader = accelerator.prepare(model, optimizer, train_loader, val_loader)
 
     val_best, ade_best, fde_best, val_edge_acc_best = np.inf, np.inf, np.inf, 0.
 
@@ -217,7 +213,6 @@ if __name__ == '__main__':
 
         for i, data in tqdm.tqdm(enumerate(train_loader), total=len(train_loader), desc=f"Epoch {epoch}"):
             optimizer.zero_grad()
-
             dd = process_data(data, config)
 
             with accelerator.autocast():
@@ -231,12 +226,12 @@ if __name__ == '__main__':
         epoch_loss = accelerator.gather(epoch_loss)
             
         if accelerator.is_main_process:
-            print(f"Training Epoch: {epoch}, lr={optimizer.param_groups[0]['lr']}, epoch_loss={epoch_loss.mean().item()}")
+            print(f"Training Epoch: {epoch}, lr={optimizer.param_groups[0]['lr']}, epoch_loss={epoch_loss.mean().item() / len(train_loader)}")
                 
         val_eval_results = val(model, config, val_loader)
 
         if accelerator.is_main_process:
-            lr_scheduler.step(metrics=(val_eval_results["FDE"] + val_eval_results["ADE"]) / 2)
+            #lr_scheduler.step(metrics=(val_eval_results["FDE"] + val_eval_results["ADE"]) / 2)
             print("Epoch {} validation-set results: ".format(epoch), "\t".join([f"{k}: {v}" if type(v) is np.ndarray else f"{k}: {v:.3f}" for k, v in val_eval_results.items()]))
 
             if (val_eval_results["FDE"] + val_eval_results["ADE"]) < val_best:
@@ -246,5 +241,5 @@ if __name__ == '__main__':
 
                 print("Validation FDE+ADE improved. Saving model. ")
 
-                accelerator.unwrap_model(model).save_models(epoch, val_edge_acc_best)    
+                accelerator.unwrap_model(model).save(epoch, optimizer, val_best, ade_best, fde_best)    
                 print("Best loss: {:.4f}".format(val_best), "Best ADE: {:.3f}".format(ade_best), "Best FDE: {:.3f}".format(fde_best))

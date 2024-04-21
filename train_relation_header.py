@@ -18,7 +18,7 @@ from accelerate import Accelerator, DistributedDataParallelKwargs
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--dataset", choices=['interaction', 'argoverse2'], help='dataset : (interaction, argoverse2)', default="interaction")
-parser.add_argument("--config_name", default="dev", help="a name to indicate the log path and model save path")
+parser.add_argument("--config_name", default="test", help="a name to indicate the log path and model save path")
 parser.add_argument("--h_dim", default=128, type=int, help='dimension for the hidden layers of MLPs. Note that the GRU always has h_dim=256')
 parser.add_argument("--num_edge_types", default=3, type=int, help='3 types: no-interaction, a-influences-b, b-influences-a')
 parser.add_argument("--ig", choices=['sparse', 'dense', 'm2i'], help='which interaction graph pseudolabels to use', default="sparse")
@@ -28,8 +28,8 @@ parser.add_argument("--lr", default=1e-3, type=float, help="initial learning rat
 parser.add_argument("--focal_loss", action="store_true", help="use multiclass focal loss for relation header?")
 parser.add_argument("--gamma", default=5, type=float, help="gamma parameter for focal loss.")
 parser.add_argument("--weight_0", default=1., type=float, help="weight of class 0 for relation header.")
-parser.add_argument("--weight_1", default=4., type=float, help="weight of class 1 for relation header.")
-parser.add_argument("--weight_2", default=4., type=float, help="weight of class 2 for relation header.")
+parser.add_argument("--weight_1", default=5., type=float, help="weight of class 1 for relation header.")
+parser.add_argument("--weight_2", default=5., type=float, help="weight of class 2 for relation header.")
 parser.add_argument("--train_all", action="store_true", help="train on both the train and validation sets?")
 parser.add_argument("--no_agenttype_encoder", action="store_true", help="encode agent type in FJMP encoder? Only done for Argoverse 2 as INTERACTION only predicts vehicle trajectories.")
 parser.add_argument("--n_mapnet_layers", default=2, type=int, help='number of MapNet blocks')
@@ -53,10 +53,8 @@ def val(model, config, val_loader):
             dd = process_data(data, config)
 
             relations_preds = model(dd, train=False)
-            edge_probs = my_softmax(relations_preds, -1)
-
             ig_labels_all.append(dd["ig_labels"].detach().cpu())                                            
-            ig_preds.append(edge_probs.detach().cpu())
+            ig_preds.append(relations_preds.detach().cpu())
 
     results_ig_preds = torch.concatenate(ig_preds, axis=0)
     results_ig_labels_all = torch.concatenate(ig_labels_all, axis=0)    
@@ -114,11 +112,14 @@ if __name__ == '__main__':
     log = os.path.join(config["log_path"], "log")
     # write stdout to log file
     sys.stdout = Logger(log)
+    
 
     train_loader, val_loader = get_dataloaders(args, config)
 
     # Running training code
     model = FJMPHeaderEncoderTrainer(config, device=accelerator.device)
+
+    sd = torch.load("/home/sacardoz/FJMP/logs/fjmp_interaction/best_model_relation_header.pt")
 
     if accelerator.is_main_process:
         m = sum(p.numel() for p in model.parameters())
@@ -128,7 +129,6 @@ if __name__ == '__main__':
 
     # initialize optimizer
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3)
-    #lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95 ** 0.25)
 
     model, optimizer, train_loader, val_loader = accelerator.prepare(model, optimizer, train_loader, val_loader)
 
@@ -155,18 +155,16 @@ if __name__ == '__main__':
         epoch_loss = accelerator.gather(epoch_loss)
             
         if accelerator.is_main_process:
-            print(f"Training Epoch: {epoch}, epoch_loss={epoch_loss.mean().item()}")
+            print(f"Training Epoch: {epoch}, epoch_loss={epoch_loss.mean().item() / len(train_loader)}")
         
-        #lr_scheduler.step()
-
         edge_acc, ea0, ea1, ea2 = val(model, config, val_loader)
 
 
         if accelerator.is_main_process:
 
             val_dict = {"val acc": edge_acc, "val acc 0": ea0, "val acc 1": ea1, "val acc 2": ea2}
+            edge_acc = (ea0 + ea1 + ea2) / 3
             print("Epoch {} validation-set results: ".format(epoch), "\t".join([f"{k}: {v}" if type(v) is np.ndarray else f"{k}: {v:.3f}" for k, v in val_dict.items()]))
-
             if edge_acc > val_edge_acc_best:
                 print("Validation Edge Accuracy improved.")  
                 val_edge_acc_best = edge_acc  

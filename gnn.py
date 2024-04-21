@@ -146,7 +146,7 @@ class GNNPipeline(nn.Module):
         return gmm_params
 
     def init_dgl_graph(self, batch_idxs, ctrs, orig, rot, agenttypes, world_locs, has_preds):        
-        n_scenarios = len(np.unique(batch_idxs))
+        n_scenarios = len(np.unique(batch_idxs.cpu()))
         graphs, labels = [], []
         for ii in range(n_scenarios):
             label = None
@@ -166,13 +166,13 @@ class GNNPipeline(nn.Module):
                 graph = dgl.graph(([], []), num_nodes=si)
 
             # separate graph for each scenario
-            graph.ndata["ctrs"] = ctrs[batch_idxs == ii]
-            graph.ndata["rot"] = rot[batch_idxs == ii]
-            graph.ndata["orig"] = orig[batch_idxs == ii]
-            graph.ndata["agenttypes"] = agenttypes[batch_idxs == ii].float()
+            graph.ndata["ctrs"] = ctrs[batch_idxs == ii].cpu()
+            graph.ndata["rot"] = rot[batch_idxs == ii].cpu()
+            graph.ndata["orig"] = orig[batch_idxs == ii].cpu()
+            graph.ndata["agenttypes"] = agenttypes[batch_idxs == ii].float().cpu()
             # ground truth future in SE(2)-transformed coordinates
-            graph.ndata["ground_truth_futures"] = world_locs[batch_idxs == ii][:, self.observation_steps:]
-            graph.ndata["has_preds"] = has_preds[batch_idxs == ii].float()
+            graph.ndata["ground_truth_futures"] = world_locs[batch_idxs == ii][:, self.observation_steps:].cpu()
+            graph.ndata["has_preds"] = has_preds[batch_idxs == ii].float().cpu()
             
             graphs.append(graph)
             labels.append(label)
@@ -204,7 +204,7 @@ class GNNPipeline(nn.Module):
         std_x = torch.exp(log_std_x)
         std_y = torch.exp(log_std_y)
 
-        gmm_loss = log_std_x + log_std_y + 0.5 * (torch.square(dx/std_x) + torch.square(dy/std_y)) + torch.ones_like(log_std_x) * 4
+        gmm_loss = log_std_x + log_std_y + 0.5 * (torch.square(dx/std_x) + torch.square(dy/std_y))
 
         return gmm_loss
 
