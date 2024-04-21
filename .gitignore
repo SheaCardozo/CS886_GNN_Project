@@ -1,0 +1,7 @@
+dataset_AV2/
+dataset_INTERACTION/
+__pycache__/
+
+*.pt
+*.npy
+*.png
